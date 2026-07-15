@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Editors
+.idea/
+.vscode/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Go build and test output
+/bin/
+/go-learning
+*.test
+*.out
+coverage/
