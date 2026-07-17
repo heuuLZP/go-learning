@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Go 后端闯关地图</title>
+  <link rel="stylesheet" href="assets/course.css">
+</head>
+<body class="roadmap-page">
+<main>
+  <nav class="roadmap-nav" aria-label="学习导航">
+    <a href="current.md">返回当前关</a>
+  </nav>
+
+  <header class="roadmap-hero">
+    <div class="eyebrow">Go Backend Roadmap</div>
+    <h1>Go 后端闯关地图</h1>
+    <p>主线固定，关内练习会根据你的实际疑问调整。平时只需完成当前关，想确认方向时再回到这里。</p>
+
+    <div class="roadmap-progress" aria-label="学习进度：已完成 1 关，共 12 关，当前在阶段一第二关">
+      <div>
+        <span>总进度</span>
+        <strong>1 / 12</strong>
+      </div>
+      <div>
+        <span>当前位置</span>
+        <strong>阶段一 · 第二关</strong>
+      </div>
+      <progress value="1" max="12">1 / 12</progress>
+    </div>
+  </header>
+
+  <div class="roadmap-legend" aria-label="关卡状态图例">
+    <span><i class="legend-dot is-complete" aria-hidden="true"></i>已完成</span>
+    <span><i class="legend-dot is-current" aria-hidden="true"></i>当前关</span>
+    <span><i class="legend-dot is-locked" aria-hidden="true"></i>未解锁</span>
+  </div>
+
+  <section class="roadmap-stage stage-http" aria-labelledby="stage-http-title">
+    <header class="stage-heading">
+      <span class="stage-index">阶段一</span>
+      <div>
+        <h2 id="stage-http-title">HTTP 与 JSON</h2>
+        <p>让请求进入 Go，再返回客户端看得懂的响应。</p>
+      </div>
+    </header>
+    <ol class="roadmap-path" style="--stops: 3">
+      <li class="roadmap-stop is-complete">
+        <a class="roadmap-node" href="lessons/0001-first-http-response.html" aria-label="第一关，第一次 HTTP 响应，已完成">
+          <span class="roadmap-number">01</span>
+          <span class="roadmap-copy"><small>已完成</small><strong>第一次 HTTP 响应</strong></span>
+        </a>
+      </li>
+      <li class="roadmap-stop is-current">
+        <a class="roadmap-node" href="lessons/0002-http-response.html" aria-current="step" aria-label="第二关，看清 HTTP 响应，当前关">
+          <span class="roadmap-number">02</span>
+          <span class="roadmap-copy"><small>当前关</small><strong>看清 HTTP 响应</strong></span>
+        </a>
+      </li>
+      <li class="roadmap-stop is-locked">
+        <div class="roadmap-node" aria-label="第三关，Todo 与 JSON，未解锁">
+          <span class="roadmap-number">03</span>
+          <span class="roadmap-copy"><small>未解锁</small><strong>Todo 与 JSON</strong></span>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="roadmap-stage stage-rest" aria-labelledby="stage-rest-title">
+    <header class="stage-heading">
+      <span class="stage-index">阶段二</span>
+      <div>
+        <h2 id="stage-rest-title">REST 与内存 CRUD</h2>
+        <p>先在内存中完成 Todo 的创建、查询、更新和删除。</p>
+      </div>
+    </header>
+    <ol class="roadmap-path" style="--stops: 4">
+      <li class="roadmap-stop is-locked">
+        <div class="roadmap-node" aria-label="第四关，创建 Todo，未解锁">
+          <span class="roadmap-number">04</span>
+          <span class="roadmap-copy"><small>未解锁</small><strong>创建 Todo</strong></span>
+        </div>
+      </li>
+      <li class="roadmap-stop is-locked">
+        <div class="roadmap-node" aria-label="第五关，按 ID 查询，未解锁">
+          <span class="roadmap-number">05</span>
+          <span class="roadmap-copy"><small>未解锁</small><strong>按 ID 查询</strong></span>
+        </div>
+      </li>
+      <li class="roadmap-stop is-locked">
+        <div class="roadmap-node" aria-label="第六关，更新 Todo，未解锁">
+          <span class="roadmap-number">06</span>
+          <span class="roadmap-copy"><small>未解锁</small><strong>更新 Todo</strong></span>
+        </div>
+      </li>
+      <li class="roadmap-stop is-locked">
+        <div class="roadmap-node" aria-label="第七关，删除 Todo，未解锁">
+          <span class="roadmap-number">07</span>
+          <span class="roadmap-copy"><small>未解锁</small><strong>删除 Todo</strong></span>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="roadmap-stage stage-sql" aria-labelledby="stage-sql-title">
+    <header class="stage-heading">
+      <span class="stage-index">阶段三</span>
+      <div>
+        <h2 id="stage-sql-title">SQL 与 MySQL</h2>
+        <p>让数据离开内存，在数据库中完成一轮 SQL CRUD。</p>
+      </div>
+    </header>
+    <ol class="roadmap-path" style="--stops: 3">
+      <li class="roadmap-stop is-locked">
+        <div class="roadmap-node" aria-label="第八关，启动 MySQL，未解锁">
+          <span class="roadmap-number">08</span>
+          <span class="roadmap-copy"><small>未解锁</small><strong>启动 MySQL</strong></span>
+        </div>
+      </li>
+      <li class="roadmap-stop is-locked">
+        <div class="roadmap-node" aria-label="第九关，写入与查询，未解锁">
+          <span class="roadmap-number">09</span>
+          <span class="roadmap-copy"><small>未解锁</small><strong>写入与查询</strong></span>
+        </div>
+      </li>
+      <li class="roadmap-stop is-locked">
+        <div class="roadmap-node" aria-label="第十关，完成 SQL CRUD，未解锁">
+          <span class="roadmap-number">10</span>
+          <span class="roadmap-copy"><small>未解锁</small><strong>完成 SQL CRUD</strong></span>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="roadmap-stage stage-database" aria-labelledby="stage-database-title">
+    <header class="stage-heading">
+      <span class="stage-index">阶段四</span>
+      <div>
+        <h2 id="stage-database-title">Go 接入 MySQL</h2>
+        <p>把 HTTP、Go、SQL 和 MySQL 接成一条可持久化的后端链路。</p>
+      </div>
+    </header>
+    <ol class="roadmap-path" style="--stops: 2">
+      <li class="roadmap-stop is-locked">
+        <div class="roadmap-node" aria-label="第十一关，Go 连接 MySQL，未解锁">
+          <span class="roadmap-number">11</span>
+          <span class="roadmap-copy"><small>未解锁</small><strong>Go 连接 MySQL</strong></span>
+        </div>
+      </li>
+      <li class="roadmap-stop is-locked">
+        <div class="roadmap-node" aria-label="第十二关，持久化 Boss，未解锁">
+          <span class="roadmap-number">12</span>
+          <span class="roadmap-copy"><small>未解锁</small><strong>持久化 Boss</strong></span>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <footer class="roadmap-footer">
+    <a href="lessons/0002-http-response.html">进入当前关：看清 HTTP 响应</a>
+  </footer>
+</main>
+</body>
+</html>

@@ -33,26 +33,26 @@ HTTP 请求 -> REST handler -> Todo -> SQL -> MySQL -> JSON 响应
 
 ## 首月关卡池
 
-### 世界一：HTTP 与 JSON（3 关）
+### 阶段一：HTTP 与 JSON（3 关）
 
 1. 启动 `GET /hello`，修改响应并解释 handler。
 2. 新增 `GET /ping`，认识路由、方法和 `200 OK`。
 3. 用 `struct` 和 JSON 返回一个及多个 Todo。
 
-### 世界二：REST 与内存 CRUD（4 关）
+### 阶段二：REST 与内存 CRUD（4 关）
 
 4. `POST /todos`：读取 JSON，创建 Todo，返回 `201 Created`。
 5. `GET /todos/{id}`：读取路径 ID，区分 `200` 与 `404`。
 6. `PUT /todos/{id}`：完整更新 `title` 和 `done`，非法输入返回 `400`。
 7. `DELETE /todos/{id}`：删除后返回 `204 No Content`；Boss 复述 REST CRUD。
 
-### 世界三：SQL 与 MySQL（3 关）
+### 阶段三：SQL 与 MySQL（3 关）
 
 8. 用 Docker Compose 启动 MySQL，进入客户端并看到目标数据库。
 9. 建立 `todos` 表，亲自执行 `INSERT` 和 `SELECT`。
 10. 亲自执行 `UPDATE` 和 `DELETE`；不看笔记完成一次 SQL CRUD。
 
-### 世界四：Go 接入 MySQL（2 关）
+### 阶段四：Go 接入 MySQL（2 关）
 
 11. 用 `database/sql` 连接 MySQL，让创建和查询真正持久化。
 12. 完成更新和删除；Boss 重启 Go 服务并证明数据仍然存在。
@@ -80,5 +80,5 @@ Todo 固定包含 `id`、`title`、`done`、`created_at`、`updated_at`。非法
 
 - 连续卡住 5 分钟就缩小动作；同一关两次需要大量提示时插入同构练习。
 - 一次通过仍只解锁下一关，可选挑战默认折叠。
-- 每次只更新 `current.md` 和当前 HTML 课程，不一次生成 12 堂课。
+- 每次只更新 `current.md`、当前 HTML 课程和路线图状态，不一次生成 12 堂课。
 - 事务、索引、鉴权和 Redis 的解锁条件见 [`backend-capabilities.md`](backend-capabilities.md)。

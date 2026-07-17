@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第二关：看清一次 HTTP 响应</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="lesson-page"><main>
+  <nav class="lesson-nav" aria-label="课程导航"><a href="../roadmap.html">查看闯关地图</a></nav>
+  <div class="eyebrow">Level 2 · 15–20 分钟</div>
+  <h1>看清一次 HTTP 响应</h1>
+  <p class="mission">第一关已经让请求成功返回文字。这一关继续看清：状态码和正文怎样通过 <code>w</code> 发给客户端，以及 <code>Fprint</code> 与普通输出到底差在哪里。</p>
+
+  <section class="card win">
+    <strong>本关胜利画面</strong>
+    <p><code>GET /ping</code> 返回 <code>200 OK</code> 和 <code>pong</code>；换成 <code>POST</code> 后，你能解释为什么会得到 <code>405 Method Not Allowed</code>。</p>
+  </section>
+
+  <h2>1. 回忆上一关</h2>
+  <p>先不看代码回答：请求匹配 <code>GET /hello</code> 后，哪一个函数负责写回响应？想好后再继续。</p>
+
+  <h2>2. 认识新的 handler</h2>
+  <pre><code>func pingHandler(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusOK)
+    fmt.Fprint(w, "pong")
+}</code></pre>
+  <p><code>w</code> 是这次 HTTP 响应的写入目标。<code>WriteHeader</code> 写入状态码，<code>Fprint</code> 把正文写入同一个响应。</p>
+  <p>顺序很重要：状态码要在正文之前写入。现在没有使用 <code>r</code>，后面的关卡会从中读取请求信息。</p>
+
+  <h2>3. 看见状态码和正文</h2>
+  <p>启动服务：</p>
+  <pre><code>go run .</code></pre>
+  <p>保留这个终端，再打开另一个终端运行：</p>
+  <pre><code>curl -i http://localhost:8080/ping</code></pre>
+  <p>在输出中分别找到：</p>
+  <pre><code>HTTP/1.1 200 OK
+
+pong</code></pre>
+  <p><code>-i</code> 让 <code>curl</code> 同时显示响应头。浏览器通常只直接展示正文，所以这一关改用 <code>curl</code> 观察完整响应。</p>
+
+  <h2>4. 亲自比较输出位置</h2>
+  <ol>
+    <li>把 <code>fmt.Fprint(w, "pong")</code> 临时改成 <code>fmt.Print("pong")</code>。</li>
+    <li>停止并重新运行服务，再执行一次相同的 <code>curl -i</code>。</li>
+    <li>观察：<code>pong</code> 出现在运行 Go 服务的终端中，而 HTTP 响应只剩状态和响应头。</li>
+    <li>把代码恢复为 <code>fmt.Fprint(w, "pong")</code>，再次验证正文回来了。</li>
+  </ol>
+  <p><code>fmt.Print</code> 的默认目标是标准输出；<code>fmt.Fprint</code> 的第一个参数决定写到哪里。这里把 <code>w</code> 传进去，就是写入 HTTP 响应。</p>
+
+  <h2>5. 请求方法也是路由条件</h2>
+  <p>再发送一次 <code>POST</code> 请求：</p>
+  <pre><code>curl -i -X POST http://localhost:8080/ping</code></pre>
+  <p>这次会看到 <code>405 Method Not Allowed</code>。路径仍然是 <code>/ping</code>，但这条路由按 <code>GET</code> 方式注册，<code>POST</code> 不会匹配它。</p>
+
+  <h2>6. 一题验收</h2>
+  <div class="card">
+    <p>把 <code>fmt.Fprint(w, "pong")</code> 换成 <code>fmt.Print("pong")</code> 后，为什么客户端看不到 <code>pong</code>？</p>
+    <button onclick="answer(false)">因为 <code>pingHandler</code> 没有执行</button>
+    <button onclick="answer(true)">因为文字写到了服务终端，而不是 HTTP 响应</button>
+    <button onclick="answer(false)">因为只有浏览器能接收文字</button>
+    <p id="feedback" aria-live="polite"></p>
+  </div>
+
+  <section class="card win">
+    <strong>向老师通关</strong>
+    <p>回复 <code>GET /ping</code> 和 <code>POST /ping</code> 的状态码，再用自己的话解释 <code>w</code>、<code>Fprint</code> 和 <code>Print</code> 的区别。</p>
+  </section>
+
+  <p class="tiny">卡住时贴出完整的 <code>curl -i</code> 输出。回看进度：<a href="../roadmap.html">Go 后端闯关地图</a>。官方资料：<a href="https://pkg.go.dev/net/http#ResponseWriter">ResponseWriter</a> 和 <a href="https://pkg.go.dev/fmt#Fprint">fmt.Fprint</a>。</p>
+</main>
+<script>
+  function answer(correct) {
+    document.getElementById('feedback').textContent = correct
+      ? '答对了：Fprint 的第一个参数决定输出目标，w 代表 HTTP 响应。'
+      : '再观察两个终端：pong 最终出现在哪里？';
+  }
+</script>
+</body>
+</html>

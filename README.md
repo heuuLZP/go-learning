@@ -4,17 +4,23 @@
 
 ## 现在开始
 
-第一关：启动一个 Go HTTP 服务，访问 `GET /hello`，再亲自修改响应文字。
+第二关：观察一次完整的 HTTP 响应，理解 `ResponseWriter`、输出位置和状态码。
 
 ```bash
 go run .
 ```
 
-然后访问 <http://localhost:8080/hello>。
+然后运行：
 
-课程页面：[`lessons/0001-first-http-response.html`](lessons/0001-first-http-response.html)
+```bash
+curl -i http://localhost:8080/ping
+```
+
+课程页面：[`lessons/0002-http-response.html`](lessons/0002-http-response.html)
 
 当前任务与通关条件：[`current.md`](current.md)
+
+整体路线与当前进度：[`roadmap.html`](roadmap.html)
 
 ## 学习方式
 
@@ -27,6 +33,7 @@ go run .
 ## 仓库结构
 
 - `current.md`：唯一的日常学习入口
+- `roadmap.html`：4 个学习阶段和 12 个微关的可视化路线
 - `lessons/`：每次只学习一个目标的关卡页面
 - `reference/`：学过内容的精简速查资料
 - `learning-records/`：学习过程中的阶段记录

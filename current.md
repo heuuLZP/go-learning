@@ -1,27 +1,30 @@
-# 当前关：让 Go 服务第一次回应你
+# 当前关：看清一次 HTTP 响应
 
-预计用时：10–15 分钟。今天只做这一关。
+预计用时：15–20 分钟。今天只做这一关。
 
-这仍然是后端主线的第一步：先看见“代码 → 启动 → 请求 → 响应”，暂时不要考虑 JSON、SQL 或 MySQL。
+第一关已经通关。第二关沿着你对 `Fprint` 和参数 `w` 的疑问，观察状态码、响应正文和输出位置。
 
 ## 通关条件
 
 - 运行 `go run .`
-- 访问 `http://localhost:8080/hello`，看到 `Hello, Go`
-- 把响应改成一句你自己的话，再次看到新结果
-- 能说出：`/hello` 的请求由哪段函数处理
+- 用 `curl -i http://localhost:8080/ping` 看到 `200 OK` 和 `pong`
+- 用 `POST` 请求 `/ping`，看到 `405 Method Not Allowed`
+- 完成一次 `fmt.Fprint` 与 `fmt.Print` 的对比实验，并把代码恢复
+- 能说出：`w` 在 handler 中起什么作用
 
 ## 开始
 
-打开 [第一关课程](lessons/0001-first-http-response.html)。
+打开 [第二关课程](lessons/0002-http-response.html)。
 
-如果今天只有 2 分钟：只运行 `go version`，把输出发给老师，也算保温成功；下一次仍从本关继续。
+想先看整体方向，可以打开 [Go 后端闯关地图](roadmap.html)。
+
+如果今天只有 2 分钟：只运行一次 `curl -i http://localhost:8080/ping`，找到状态码和正文，也算保温成功；下一次仍从本关继续。
 
 ## 向老师通关
 
-完成后只需回复两样东西：
+完成后回复两样东西：
 
-1. 你改成了什么响应文字；
-2. 你认为处理 `/hello` 的是哪一段代码。
+1. `GET /ping` 和 `POST /ping` 分别看到了什么状态码；
+2. 你怎么理解 `w`，以及 `fmt.Fprint(w, ...)` 和 `fmt.Print(...)` 的区别。
 
 老师确认后才解锁下一关。

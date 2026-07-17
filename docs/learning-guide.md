@@ -37,13 +37,9 @@
 ## 第一课拆分
 
 1. 启动服务并实现 `GET /hello`，返回 `Hello, Go`。
-2. 返回一个 Todo 的 JSON，认识 `struct` 和 JSON。
-3. 返回多个 Todo，认识切片 `[]Todo`。
+2. 新增 `GET /ping`，认识请求方法、`ResponseWriter` 和 `200 OK`。
+3. 用 `struct` 和 JSON 返回一个及多个 Todo。
 
-## 第一课当前任务
+## 当前任务
 
-实现一个最小 Go HTTP 服务：访问 `GET /hello` 时返回：
-
-```text
-Hello, Go
-```
+当前关卡、通关条件和保温动作统一放在 [`current.md`](../current.md)，整体进度可以在 [`roadmap.html`](../roadmap.html) 查看。
