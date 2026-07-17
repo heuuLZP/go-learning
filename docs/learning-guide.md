@@ -1,6 +1,6 @@
 # Go 学习方式
 
-> 新的日常入口是 [CURRENT.md](CURRENT.md)。学习时只打开当前关；完整首月关卡放在教师用的 [COURSE-DESIGN.md](COURSE-DESIGN.md)，不需要提前阅读。
+> 日常入口是 [`current.md`](../current.md)。学习时只打开当前关；完整首月关卡放在教师用的 [`course-design.md`](course-design.md)，不需要提前阅读。
 
 ## 学习目标
 
@@ -22,8 +22,17 @@
 ## 第一阶段边界
 
 - 使用 Go 标准库，不引入 Gin 等框架。
-- 暂不使用数据库，数据先保存在内存中。
+- 前 7 关数据保存在内存中，第 8 关后才开始使用 Docker MySQL。
+- 使用原生 SQL 和 `database/sql`，不引入 ORM、Prisma 或 Redis。
 - 先建立“代码 → 启动 → 请求 → 响应”的完整反馈回路。
+
+## 首月达成
+
+- 8/12：能运行和修改内存版 REST CRUD。
+- 10/12：能启动 MySQL 并执行 SQL CRUD。
+- 12/12：Go API 使用 MySQL，服务重启后数据仍存在。
+
+任一档都算首月完成，不补课，不追赶。
 
 ## 第一课拆分
 

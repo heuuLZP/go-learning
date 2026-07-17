@@ -1,0 +1,139 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Space+Mono:wght@400;700&display=swap");
+
+:root {
+  color-scheme: light;
+  --paper: oklch(98% .01 85);
+  --ink: #1a1a19;
+  --surface: #f8f8f7;
+  --primary: oklch(65% .2 30);
+  --secondary: oklch(88% .1 145);
+  --accent: oklch(88% .08 300);
+  --muted: #625f58;
+  --radius: 1rem;
+  --border: 2px solid var(--ink);
+  --shadow-sm: 2px 2px 0 0 var(--ink);
+  --shadow-md: 4px 4px 0 0 var(--ink);
+  --shadow-lg: 8px 8px 0 0 var(--ink);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: var(--paper);
+  color: var(--ink);
+  font: 500 17px/1.68 "Nunito", "PingFang SC", system-ui, sans-serif;
+}
+
+p { max-width: 68ch; }
+strong { font-weight: 900; }
+
+h2 {
+  display: table;
+  padding: 5px 12px;
+  border: var(--border);
+  border-radius: 12px;
+  background: var(--accent);
+  box-shadow: var(--shadow-sm);
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+code {
+  padding: .08em .34em;
+  border: 1.5px solid var(--ink);
+  border-radius: 7px;
+  background: var(--accent);
+  font-family: "Space Mono", monospace;
+  font-size: .86em;
+  font-weight: 700;
+}
+
+pre {
+  overflow: auto;
+  padding: 20px;
+  border: var(--border);
+  border-radius: var(--radius);
+  background: var(--ink);
+  box-shadow: var(--shadow-lg);
+  color: var(--surface);
+  font: 400 14px/1.7 "Space Mono", monospace;
+}
+
+pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+a {
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration-color: var(--primary);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+}
+
+a:hover { background: var(--primary); }
+a:focus-visible,
+button:focus-visible { outline: 4px solid var(--primary); outline-offset: 3px; }
+
+.lesson-page {
+  background-image:
+    linear-gradient(rgba(26, 26, 25, .045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 25, .045) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.lesson-page main { max-width: 860px; margin: 0 auto; padding: 48px 24px 88px; }
+.lesson-page h1 { margin: .35em 0 .3em; max-width: 13ch; font-size: clamp(40px, 7vw, 68px); font-weight: 900; line-height: .98; letter-spacing: -.045em; text-wrap: balance; }
+.lesson-page h2 { margin: 48px 0 18px; font-size: 23px; }
+.lesson-page .eyebrow { display: inline-block; padding: 7px 13px; border: var(--border); border-radius: 999px; background: var(--primary); box-shadow: var(--shadow-md); font-family: "Space Mono", monospace; font-size: 14px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; transform: rotate(-1deg); }
+.lesson-page .mission { max-width: 720px; padding: 16px 18px; border: var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-md); color: var(--muted); font-size: 19px; }
+.lesson-page .card { margin: 24px 0; padding: 22px; border: var(--border); border-radius: var(--radius); background: var(--accent); box-shadow: var(--shadow-md); transition: transform 150ms ease, box-shadow 150ms ease; }
+.lesson-page .card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 0 var(--ink); }
+.lesson-page .win { background: var(--secondary); box-shadow: var(--shadow-lg); }
+.lesson-page ol { padding-left: 1.25em; }
+.lesson-page li { margin: .85em 0; padding-left: .25em; }
+.lesson-page li::marker { font-family: "Space Mono", monospace; font-weight: 700; }
+.lesson-page button { width: 100%; margin: 8px 0; padding: 13px 15px; border: var(--border); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-sm); color: var(--ink); text-align: left; font: 800 16px/1.4 "Nunito", "PingFang SC", sans-serif; cursor: pointer; transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease; }
+.lesson-page button:hover { background: var(--primary); box-shadow: var(--shadow-md); transform: translate(-2px, -2px); }
+.lesson-page button:active { box-shadow: none; transform: translate(2px, 2px); }
+.lesson-page #feedback { min-height: 30px; margin-bottom: 0; font-weight: 900; }
+.lesson-page .tiny { margin-top: 42px; padding-top: 18px; border-top: 2px dashed var(--ink); color: var(--muted); font-size: 14px; }
+
+.reference-page {
+  background-image: radial-gradient(rgba(26, 26, 25, .12) 1px, transparent 1px);
+  background-size: 20px 20px;
+  line-height: 1.65;
+}
+
+.reference-page main { max-width: 800px; margin: 0 auto; padding: 48px 24px 80px; }
+.reference-page h1 { max-width: 12ch; margin: .35em 0 .55em; font-size: clamp(42px, 7vw, 64px); font-weight: 900; line-height: 1; letter-spacing: -.045em; }
+.reference-page h2 { margin: 44px 0 18px; font-size: 22px; }
+.reference-page .kicker { display: inline-block; margin: 0; padding: 7px 13px; border: var(--border); border-radius: 999px; background: var(--primary); box-shadow: var(--shadow-md); font-family: "Space Mono", monospace; font-size: 14px; font-weight: 700; transform: rotate(-1deg); }
+.reference-page .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 28px 8px 36px 0; }
+.reference-page .flow div { padding: 20px 14px; border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); text-align: center; font-weight: 900; transition: transform 150ms ease, box-shadow 150ms ease; }
+.reference-page .flow div:nth-child(1) { background: var(--primary); }
+.reference-page .flow div:nth-child(2) { background: var(--secondary); }
+.reference-page .flow div:nth-child(3) { background: var(--accent); }
+.reference-page .flow div:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 0 var(--ink); }
+.reference-page .arrow { font-family: "Space Mono", monospace; font-weight: 700; }
+.reference-page main > p:last-child { margin-top: 36px; padding: 18px; border: var(--border); border-radius: var(--radius); background: var(--secondary); box-shadow: var(--shadow-md); font-weight: 700; }
+
+@media (max-width: 600px) {
+  .lesson-page main,
+  .reference-page main { padding: 32px 16px 64px; }
+  .lesson-page h1 { font-size: clamp(38px, 14vw, 56px); }
+  .lesson-page .win,
+  pre { box-shadow: var(--shadow-md); }
+  .reference-page .flow { grid-template-columns: 1fr; margin-right: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lesson-page .card,
+  .lesson-page button,
+  .reference-page .flow div { transition: none; }
+}
