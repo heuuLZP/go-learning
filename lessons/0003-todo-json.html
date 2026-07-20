@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第三关：让 Todo 变成 JSON</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="lesson-page"><main>
+  <nav class="lesson-nav" aria-label="课程导航"><a href="../roadmap.html">查看闯关地图</a></nav>
+  <div class="eyebrow">Level 3 · 15–20 分钟</div>
+  <h1>让 Todo 变成 JSON</h1>
+  <p class="mission">上一关用 <code>w</code> 返回固定文字。这一关仍然写入同一个 HTTP 响应，只把内容升级为客户端容易处理的 Todo JSON。</p>
+
+  <section class="card win">
+    <strong>本关胜利画面</strong>
+    <p><code>GET /todos</code> 返回 <code>200 OK</code>、JSON 响应头和一个 Todo；你亲自增加第二项后，响应数组也会变成两项。</p>
+  </section>
+
+  <h2>1. 先预测</h2>
+  <p>看到 <code>json.NewEncoder(w)</code> 时，先根据上一关猜一猜：JSON 最后会写到 Go 服务终端，还是 HTTP 响应？暂时不要往下找答案。</p>
+
+  <h2>2. 看懂 Todo 的形状</h2>
+  <pre><code>type Todo struct {
+    ID    int    `json:"id"`
+    Title string `json:"title"`
+    Done  bool   `json:"done"`
+}</code></pre>
+  <p><code>struct</code> 把一组相关字段组成一种数据。这里一个 Todo 有数字 <code>ID</code>、文字 <code>Title</code> 和真假值 <code>Done</code>。</p>
+  <p>字段名首字母大写，JSON 编码器才能读取它们；后面的 <code>json:"title"</code> 等标签决定 JSON 中显示的小写字段名。更完整的 struct 语法暂时延后。</p>
+
+  <h2>3. 请求 JSON</h2>
+  <p>启动服务：</p>
+  <pre><code>go run .</code></pre>
+  <p>在另一个终端运行：</p>
+  <pre><code>curl -i http://localhost:8080/todos</code></pre>
+  <p>找到三部分：</p>
+  <pre><code>HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"id":1,"title":"看懂 JSON 响应","done":false}]</code></pre>
+  <p>方括号表示这是一个列表；花括号中的三个 JSON 字段来自 <code>Todo</code> 的三个 Go 字段。</p>
+
+  <h2>4. 沿着 w 再走一遍</h2>
+  <pre><code>func todosHandler(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    if err := json.NewEncoder(w).Encode(todos); err != nil {
+        log.Printf("写入 JSON 响应失败: %v", err)
+    }
+}</code></pre>
+  <p><code>Header</code> 告诉客户端正文是 JSON，<code>WriteHeader</code> 写入 <code>200</code>，<code>Encode</code> 把 Go 数据转换成 JSON 并写到 <code>w</code>。输出格式变了，但响应目标没有变。</p>
+  <p>暂时只追踪成功流程。最后三行是在写入失败时记录错误，Go 的错误处理会在后续真实失败场景中再展开。</p>
+
+  <h2>5. 亲自增加一个 Todo</h2>
+  <p>在 <code>main.go</code> 中找到 <code>todos</code>，在第一项后增加第二项：</p>
+  <pre><code>var todos = []Todo{
+    {ID: 1, Title: "看懂 JSON 响应", Done: false},
+    {ID: 2, Title: "亲自增加一个 Todo", Done: true},
+}</code></pre>
+  <ol>
+    <li>保存代码，停止并重新运行服务。</li>
+    <li>再次执行相同的 <code>curl -i</code>。</li>
+    <li>确认 JSON 的方括号中出现两个对象，并找到第二项的 <code>id</code>、<code>title</code> 和 <code>done</code>。</li>
+  </ol>
+  <p>这一关只把 <code>[]Todo</code> 当作 Todo 列表使用；slice 的容量和底层数组暂时不需要学习。</p>
+
+  <h2>6. 一题验收</h2>
+  <div class="card">
+    <p><code>json.NewEncoder(w).Encode(todos)</code> 中的 <code>w</code> 说明了什么？</p>
+    <button onclick="answer(false)">JSON 只会打印到 Go 服务终端</button>
+    <button onclick="answer(true)">编码后的 JSON 会写入 HTTP 响应</button>
+    <button onclick="answer(false)">w 保存了 todos 列表</button>
+    <p id="feedback" aria-live="polite"></p>
+  </div>
+
+  <section class="card win">
+    <strong>向老师通关</strong>
+    <p>贴出增加第二个 Todo 后的 JSON，再用自己的话解释 Go 的 <code>Todo</code>、JSON 字段与 <code>json.NewEncoder(w)</code> 的关系。</p>
+  </section>
+
+  <p class="tiny">本关明确延后：读取请求 JSON、slice 底层原理、时间字段和完整错误处理。回看进度：<a href="../roadmap.html">Go 后端闯关地图</a>。官方资料：<a href="https://pkg.go.dev/encoding/json">encoding/json</a>。</p>
+</main>
+<script>
+  function answer(correct) {
+    document.getElementById('feedback').textContent = correct
+      ? '答对了：和 Fprint 一样，w 决定内容进入 HTTP 响应。'
+      : '回忆第二关：传给输出函数的第一个写入目标是谁？';
+  }
+</script>
+</body>
+</html>

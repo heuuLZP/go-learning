@@ -4,7 +4,7 @@
 
 ## 现在开始
 
-第二关：观察一次完整的 HTTP 响应，理解 `ResponseWriter`、输出位置和状态码。
+第三关：用 Go `struct` 表示 Todo，并通过 HTTP 返回 JSON 数组。
 
 ```bash
 go run .
@@ -13,10 +13,10 @@ go run .
 然后运行：
 
 ```bash
-curl -i http://localhost:8080/ping
+curl -i http://localhost:8080/todos
 ```
 
-课程页面：[`lessons/0002-http-response.html`](lessons/0002-http-response.html)
+课程页面：[`lessons/0003-todo-json.html`](lessons/0003-todo-json.html)
 
 当前任务与通关条件：[`current.md`](current.md)
 
