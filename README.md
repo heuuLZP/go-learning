@@ -40,7 +40,7 @@ curl -i http://localhost:8080/ping
 - `docs/`：学习目标、课程设计、资料和教师笔记
 - `main.go`：当前练习代码
 
-更多说明：[`docs/learning-guide.md`](docs/learning-guide.md)。教师用课程设计见 [`docs/course-design.md`](docs/course-design.md)。
+更多说明：[`docs/learning-guide.md`](docs/learning-guide.md)。可复用于其他主题的教学方法见 [`docs/learning-method.md`](docs/learning-method.md)，教师用课程设计见 [`docs/course-design.md`](docs/course-design.md)。
 
 ## 当前范围
 
