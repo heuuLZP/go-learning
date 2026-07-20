@@ -20,6 +20,8 @@ var todos = []Todo{
 	{ID: 2, Title: "增加第二项", Done: false},
 }
 
+var nextTodoID = 3
+
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hello, Go First")
 }
@@ -44,7 +46,8 @@ func createTodoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	todo.ID = len(todos) + 1
+	todo.ID = nextTodoID
+	nextTodoID++
 	todos = append(todos, todo)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -109,6 +112,24 @@ func updateTodoHandler(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Todo 不存在", http.StatusNotFound)
 }
 
+func deleteTodoHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Todo ID 无效", http.StatusBadRequest)
+		return
+	}
+
+	for index := range todos {
+		if todos[index].ID == id {
+			todos = append(todos[:index], todos[index+1:]...)
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+	}
+
+	http.Error(w, "Todo 不存在", http.StatusNotFound)
+}
+
 func main() {
 	http.HandleFunc("GET /hello", helloHandler)
 	http.HandleFunc("GET /ping", pingHandler)
@@ -116,8 +137,9 @@ func main() {
 	http.HandleFunc("POST /todos", createTodoHandler)
 	http.HandleFunc("GET /todos/{id}", todoHandler)
 	http.HandleFunc("PUT /todos/{id}", updateTodoHandler)
+	http.HandleFunc("DELETE /todos/{id}", deleteTodoHandler)
 
 	log.Println("服务已启动：http://localhost:8080/hello")
-	log.Println("第六关入口：PUT http://localhost:8080/todos/1")
+	log.Println("第七关准备：先 POST 创建练习 Todo，再 DELETE /todos/{id}")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

@@ -4,7 +4,7 @@
 
 ## 现在开始
 
-第六关：组合路径 ID 和请求 JSON，用 `PUT` 更新内存中的 Todo。
+第七关 Boss：删除 Todo，并复述完整的内存 REST CRUD。
 
 ```bash
 go run .
@@ -13,12 +13,10 @@ go run .
 然后运行：
 
 ```bash
-curl -i -X PUT http://localhost:8080/todos/1 \
-  -H 'Content-Type: application/json' \
-  -d '{"title":"完成第六关","done":true}'
+curl -i -X DELETE http://localhost:8080/todos/2
 ```
 
-课程页面：[`lessons/0006-update-todo.html`](lessons/0006-update-todo.html)
+课程页面：[`lessons/0007-delete-todo.html`](lessons/0007-delete-todo.html)
 
 当前任务与通关条件：[`current.md`](current.md)
 

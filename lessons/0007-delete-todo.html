@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第七关：删除 Todo Boss</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="lesson-page"><main>
+  <nav class="lesson-nav" aria-label="学习导航"><a href="../roadmap.html">查看闯关地图</a></nav>
+  <div class="eyebrow">Level 7 · Boss · 20 分钟</div>
+  <h1>删除 Todo Boss</h1>
+  <p class="mission">完成最后一个内存操作：删除指定 Todo。随后把创建、查询、更新、删除连成一套完整 CRUD。</p>
+
+  <section class="card win">
+    <strong>本关胜利画面</strong>
+    <p><code>DELETE /todos/3</code> 返回 <code>204 No Content</code>；随后查询 ID 3 返回 <code>404 Not Found</code>。</p>
+  </section>
+
+  <h2>1. 先创建一条练习数据</h2>
+  <p>启动服务后，创建一条专门用于删除的 Todo：</p>
+  <pre><code>curl -i -X POST http://localhost:8080/todos \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"准备删除的 Todo","done":false}'</code></pre>
+  <p>记下响应中的 ID。服务刚重启时它应是 <code>3</code>；后续删除请求要使用你实际看到的 ID。</p>
+
+  <h2>2. 删除它</h2>
+  <pre><code>curl -i -X DELETE http://localhost:8080/todos/3</code></pre>
+  <p>成功响应只有状态，没有 JSON 正文：</p>
+  <pre><code>HTTP/1.1 204 No Content</code></pre>
+  <p><code>204 No Content</code> 表示操作成功，但服务器不返回响应正文。不要为它额外写 JSON。</p>
+
+  <h2>3. 证明它真的消失了</h2>
+  <pre><code>curl -i http://localhost:8080/todos/3</code></pre>
+  <p>此时应看到 <code>404 Not Found</code>。一次 <code>204</code> 说明删除请求成功，后续 <code>404</code> 则从查询角度证明资源已经不存在。</p>
+
+  <h2>4. 看懂 slice 删除</h2>
+  <pre><code>todos = append(todos[:index], todos[index+1:]...)</code></pre>
+  <p><code>todos[:index]</code> 是目标之前的部分，<code>todos[index+1:]</code> 是目标之后的部分。把前后两段重新接起来，中间的目标元素就被移除了。</p>
+  <p>创建 Todo 现在使用单独递增的 <code>nextTodoID</code>，不会因为列表变短而重复使用已有 ID。</p>
+
+  <h2>5. CRUD Boss 复述</h2>
+  <pre><code>POST   /todos       → 创建 → 201 Created
+GET    /todos/{id}  → 查询 → 200 OK / 404 Not Found
+PUT    /todos/{id}  → 更新 → 200 OK / 400 Bad Request / 404 Not Found
+DELETE /todos/{id}  → 删除 → 204 No Content / 404 Not Found</code></pre>
+  <p>不用背代码，只要能从“客户端想做什么”选择方法和路径，再根据结果理解状态码，就已经完成了第一轮 REST CRUD。</p>
+
+  <h2>6. 一题验收</h2>
+  <div class="card">
+    <p>删除成功后为什么使用 <code>204</code>？</p>
+    <button onclick="answer(false)">因为删除失败，服务器没有错误正文</button>
+    <button onclick="answer(true)">因为删除成功，并且响应不需要正文</button>
+    <button onclick="answer(false)">因为 204 表示资源仍然存在</button>
+    <p id="feedback" aria-live="polite"></p>
+  </div>
+
+  <section class="card win">
+    <strong>向老师通关</strong>
+    <p>贴出创建练习 Todo、删除它以及随后查询得到 <code>404</code> 的关键响应；再用自己的话复述 POST、GET、PUT、DELETE 分别操作什么，以及为什么删除表达式会移除目标元素。</p>
+  </section>
+
+  <p class="tiny">本关明确延后：并发安全、软删除、数据库 DELETE、事务和统一错误 JSON。下一阶段将让数据离开 Go 内存，进入 MySQL。回看进度：<a href="../roadmap.html">Go 后端闯关地图</a>。</p>
+</main>
+<script>
+  function answer(correct) {
+    document.getElementById('feedback').textContent = correct
+      ? '答对了：成功完成操作，但没有响应正文。'
+      : '204 中的 No Content 描述的是响应正文，不是操作失败。';
+  }
+</script>
+</body>
+</html>
