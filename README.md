@@ -4,7 +4,7 @@
 
 ## 现在开始
 
-第四关：读取 `POST` 请求中的 JSON，在内存中创建 Todo，并返回 `201 Created`。
+第五关：从 URL 路径读取 Todo ID，返回单个 Todo 或 `404 Not Found`。
 
 ```bash
 go run .
@@ -13,12 +13,10 @@ go run .
 然后运行：
 
 ```bash
-curl -i -X POST http://localhost:8080/todos \
-  -H 'Content-Type: application/json' \
-  -d '{"title":"用 POST 创建 Todo","done":false}'
+curl -i http://localhost:8080/todos/1
 ```
 
-课程页面：[`lessons/0004-create-todo.html`](lessons/0004-create-todo.html)
+课程页面：[`lessons/0005-get-todo-by-id.html`](lessons/0005-get-todo-by-id.html)
 
 当前任务与通关条件：[`current.md`](current.md)
 

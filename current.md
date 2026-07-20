@@ -1,30 +1,30 @@
-# 当前关：用 POST 创建 Todo
+# 当前关：按 ID 查询 Todo
 
 预计用时：15–20 分钟。今天只做这一关。
 
-第三关已经通关。第四关把数据方向反过来：上一关把 Go 数据写成响应 JSON，这一关从请求 JSON 中创建一个新的 Todo。
+第四关已经通关。第五关继续使用 `GET`，但不再返回整个列表：从 URL 路径读取 ID，只返回匹配的 Todo，并区分 `200`、`400` 与 `404`。
 
 ## 通关条件
 
 - 运行 `go run .`
-- 用 `POST /todos` 发送 JSON，看到 `201 Created` 和新 Todo
-- 亲自修改请求中的 `title`，再创建一个 Todo
-- 用 `GET /todos` 确认新 Todo 已追加到内存列表
-- 能说出：`r.Body`、`Decode(&todo)`、`append` 和 `201 Created` 分别起什么作用
+- 用 `GET /todos/1` 看到 `200 OK` 和单个 Todo
+- 亲自把路径 ID 改为另一个存在的 ID，看到不同 Todo
+- 用 `GET /todos/999` 看到 `404 Not Found`
+- 能说出：`PathValue`、`Atoi`、`range` 和 `404 Not Found` 分别起什么作用
 
 ## 开始
 
-打开 [第四关课程](lessons/0004-create-todo.html)。
+打开 [第五关课程](lessons/0005-get-todo-by-id.html)。
 
 想先看整体方向，可以打开 [Go 后端闯关地图](roadmap.html)。
 
-如果今天只有 2 分钟：只发送一次课程中的 `POST /todos`，找到 `201 Created` 和响应 JSON，也算保温成功；下一次仍从本关继续。
+如果今天只有 2 分钟：只对比一次 `/todos/1` 和 `/todos/999` 的状态码，也算保温成功；下一次仍从本关继续。
 
 ## 向老师通关
 
 完成后回复两样东西：
 
-1. 修改标题后的 `POST` 响应，以及随后 `GET /todos` 的 JSON；
-2. 你怎么理解 `r.Body`、`Decode(&todo)`、`append` 和 `201 Created`。
+1. 查询一个存在 ID 和一个不存在 ID 的响应；
+2. 你怎么理解 `PathValue`、`Atoi`、`range` 和 `404 Not Found`。
 
 老师确认后才解锁下一关。

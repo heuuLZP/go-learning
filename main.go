@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type Todo struct {
@@ -52,13 +53,35 @@ func createTodoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func todoHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Todo ID 无效", http.StatusBadRequest)
+		return
+	}
+
+	for _, todo := range todos {
+		if todo.ID == id {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			if err := json.NewEncoder(w).Encode(todo); err != nil {
+				log.Printf("写入 JSON 响应失败: %v", err)
+			}
+			return
+		}
+	}
+
+	http.Error(w, "Todo 不存在", http.StatusNotFound)
+}
+
 func main() {
 	http.HandleFunc("GET /hello", helloHandler)
 	http.HandleFunc("GET /ping", pingHandler)
 	http.HandleFunc("GET /todos", todosHandler)
 	http.HandleFunc("POST /todos", createTodoHandler)
+	http.HandleFunc("GET /todos/{id}", todoHandler)
 
 	log.Println("服务已启动：http://localhost:8080/hello")
-	log.Println("第四关入口：POST http://localhost:8080/todos")
+	log.Println("第五关入口：http://localhost:8080/todos/1")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
