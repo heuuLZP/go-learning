@@ -35,12 +35,30 @@ func todosHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func createTodoHandler(w http.ResponseWriter, r *http.Request) {
+	var todo Todo
+	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
+		http.Error(w, "请求 JSON 无效", http.StatusBadRequest)
+		return
+	}
+
+	todo.ID = len(todos) + 1
+	todos = append(todos, todo)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(todo); err != nil {
+		log.Printf("写入 JSON 响应失败: %v", err)
+	}
+}
+
 func main() {
 	http.HandleFunc("GET /hello", helloHandler)
 	http.HandleFunc("GET /ping", pingHandler)
 	http.HandleFunc("GET /todos", todosHandler)
+	http.HandleFunc("POST /todos", createTodoHandler)
 
 	log.Println("服务已启动：http://localhost:8080/hello")
-	log.Println("第三关入口：http://localhost:8080/todos")
+	log.Println("第四关入口：POST http://localhost:8080/todos")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

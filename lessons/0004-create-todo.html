@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第四关：用 POST 创建 Todo</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="lesson-page"><main>
+  <nav class="lesson-nav" aria-label="学习导航"><a href="../roadmap.html">查看闯关地图</a></nav>
+  <div class="eyebrow">Level 4 · 15–20 分钟</div>
+  <h1>用 POST 创建 Todo</h1>
+  <p class="mission">上一关把 Go 数据编码成响应 JSON；这一关把方向反过来，从 HTTP 请求正文读取 JSON，创建一个新的 Todo。</p>
+
+  <section class="card win">
+    <strong>本关胜利画面</strong>
+    <p>发送 <code>POST /todos</code> 后看到 <code>201 Created</code> 和新 Todo；再次 <code>GET /todos</code> 时，列表中也能找到它。</p>
+  </section>
+
+  <h2>1. 先看数据方向</h2>
+  <pre><code>上一关：todos → JSON 编码 → HTTP 响应
+这一关：HTTP 请求 → JSON 解码 → todo → 追加到 todos</code></pre>
+  <p><code>w</code> 仍负责写响应；新出现的 <code>r.Body</code> 是客户端发来的请求正文。</p>
+
+  <h2>2. 发出创建请求</h2>
+  <p>启动服务：</p>
+  <pre><code>go run .</code></pre>
+  <p>在另一个终端发送 JSON：</p>
+  <pre><code>curl -i -X POST http://localhost:8080/todos \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"用 POST 创建 Todo","done":false}'</code></pre>
+  <p>找到状态码和响应正文：</p>
+  <pre><code>HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"id":3,"title":"用 POST 创建 Todo","done":false}</code></pre>
+  <p><code>201 Created</code> 比 <code>200 OK</code> 更具体：它表示这次请求成功创建了一个新资源。</p>
+
+  <h2>3. 沿着请求走进 Go</h2>
+  <pre><code>var todo Todo
+json.NewDecoder(r.Body).Decode(&amp;todo)</code></pre>
+  <p>第一行先准备一个空的 <code>Todo</code>。第二行从 <code>r.Body</code> 读取 JSON，并把结果放进 <code>todo</code>。这里先把 <code>&amp;todo</code> 理解为“把 todo 的位置交给 Decode”；指针语法以后再展开。</p>
+  <p>如果请求正文不是合法 JSON，handler 会返回 <code>400 Bad Request</code>，并停止创建。</p>
+
+  <h2>4. 把新项放入列表</h2>
+  <pre><code>todo.ID = len(todos) + 1
+todos = append(todos, todo)</code></pre>
+  <p>服务端为新 Todo 分配 ID，<code>append</code> 再把它追加到 <code>todos</code> 列表。随后编码这个 <code>todo</code>，把创建结果写回响应。</p>
+
+  <h2>5. 亲自改一个输入</h2>
+  <ol>
+    <li>把命令中的 <code>title</code> 改成你自己的文字，再发送一次 <code>POST</code>。</li>
+    <li>运行 <code>curl -i http://localhost:8080/todos</code>。</li>
+    <li>确认列表中出现你刚创建的 Todo，并对比两次请求的状态码和正文。</li>
+  </ol>
+  <p>数据目前只保存在内存中，重启服务后会恢复为代码里写好的初始列表；持久化会在 MySQL 阶段解决。</p>
+
+  <h2>6. 一题验收</h2>
+  <div class="card">
+    <p><code>json.NewDecoder(r.Body).Decode(&amp;todo)</code> 的数据从哪里来、到哪里去？</p>
+    <button onclick="answer(true)">从 HTTP 请求正文读取 JSON，放进 Go 的 todo</button>
+    <button onclick="answer(false)">从 todos 列表读取 JSON，写进 HTTP 响应</button>
+    <button onclick="answer(false)">从 Go 服务终端读取文字，保存到 w</button>
+    <p id="feedback" aria-live="polite"></p>
+  </div>
+
+  <section class="card win">
+    <strong>向老师通关</strong>
+    <p>贴出你亲自修改标题后的 <code>POST</code> 响应和随后一次 <code>GET /todos</code> 的 JSON，再解释 <code>r.Body</code>、<code>Decode(&amp;todo)</code>、<code>append</code> 和 <code>201 Created</code> 分别做什么。</p>
+  </section>
+
+  <p class="tiny">本关明确延后：严格字段校验、并发安全、可靠 ID 生成、指针细节和数据库持久化。回看进度：<a href="../roadmap.html">Go 后端闯关地图</a>。官方资料：<a href="https://pkg.go.dev/encoding/json#Decoder">encoding/json Decoder</a>。</p>
+</main>
+<script>
+  function answer(correct) {
+    document.getElementById('feedback').textContent = correct
+      ? '答对了：请求 JSON 经过解码后，变成 Go 可以继续处理的 Todo。'
+      : '先看数据方向：这一行读取的是 r.Body，不是 w。';
+  }
+</script>
+</body>
+</html>

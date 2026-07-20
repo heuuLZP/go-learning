@@ -4,7 +4,7 @@
 
 ## 现在开始
 
-第三关：用 Go `struct` 表示 Todo，并通过 HTTP 返回 JSON 数组。
+第四关：读取 `POST` 请求中的 JSON，在内存中创建 Todo，并返回 `201 Created`。
 
 ```bash
 go run .
@@ -13,10 +13,12 @@ go run .
 然后运行：
 
 ```bash
-curl -i http://localhost:8080/todos
+curl -i -X POST http://localhost:8080/todos \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"用 POST 创建 Todo","done":false}'
 ```
 
-课程页面：[`lessons/0003-todo-json.html`](lessons/0003-todo-json.html)
+课程页面：[`lessons/0004-create-todo.html`](lessons/0004-create-todo.html)
 
 当前任务与通关条件：[`current.md`](current.md)
 

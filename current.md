@@ -1,29 +1,30 @@
-# 当前关：让 Todo 变成 JSON
+# 当前关：用 POST 创建 Todo
 
 预计用时：15–20 分钟。今天只做这一关。
 
-第二关已经通关。第三关继续使用 `GET`、`200 OK` 和 `w`，只增加一层：用 Go 的 `struct` 表示 Todo，再把它写成 JSON 响应。
+第三关已经通关。第四关把数据方向反过来：上一关把 Go 数据写成响应 JSON，这一关从请求 JSON 中创建一个新的 Todo。
 
 ## 通关条件
 
 - 运行 `go run .`
-- 用 `curl -i http://localhost:8080/todos` 看到 `200 OK`、`Content-Type: application/json` 和一个 Todo
-- 在 `todos` 中亲自增加第二个 Todo，重启后看到 JSON 数组中有两项
-- 能说出：Go 的 `Todo` 如何对应 JSON，以及 `json.NewEncoder(w)` 中的 `w` 起什么作用
+- 用 `POST /todos` 发送 JSON，看到 `201 Created` 和新 Todo
+- 亲自修改请求中的 `title`，再创建一个 Todo
+- 用 `GET /todos` 确认新 Todo 已追加到内存列表
+- 能说出：`r.Body`、`Decode(&todo)`、`append` 和 `201 Created` 分别起什么作用
 
 ## 开始
 
-打开 [第三关课程](lessons/0003-todo-json.html)。
+打开 [第四关课程](lessons/0004-create-todo.html)。
 
 想先看整体方向，可以打开 [Go 后端闯关地图](roadmap.html)。
 
-如果今天只有 2 分钟：只运行一次 `curl -i http://localhost:8080/todos`，找到状态码、`Content-Type` 和 JSON 正文，也算保温成功；下一次仍从本关继续。
+如果今天只有 2 分钟：只发送一次课程中的 `POST /todos`，找到 `201 Created` 和响应 JSON，也算保温成功；下一次仍从本关继续。
 
 ## 向老师通关
 
 完成后回复两样东西：
 
-1. 增加第二个 Todo 前后的 JSON 正文；
-2. 你怎么理解 `Todo`、JSON 字段和 `json.NewEncoder(w)` 的关系。
+1. 修改标题后的 `POST` 响应，以及随后 `GET /todos` 的 JSON；
+2. 你怎么理解 `r.Body`、`Decode(&todo)`、`append` 和 `201 Created`。
 
 老师确认后才解锁下一关。
