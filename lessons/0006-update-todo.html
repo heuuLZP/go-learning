@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第六关：更新 Todo</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="lesson-page"><main>
+  <nav class="lesson-nav" aria-label="学习导航"><a href="../roadmap.html">查看闯关地图</a></nav>
+  <div class="eyebrow">Level 6 · 15–20 分钟</div>
+  <h1>更新 Todo</h1>
+  <p class="mission">这一关组合两条已经走过的数据路线：从 URL 读取 ID，从请求正文读取 JSON，然后替换内存列表中的 Todo。</p>
+
+  <section class="card win">
+    <strong>本关胜利画面</strong>
+    <p><code>PUT /todos/1</code> 返回 <code>200 OK</code> 和更新后的 Todo；随后再次查询 ID 1，看到新标题和新的完成状态。</p>
+  </section>
+
+  <h2>1. 先看 PUT 的输入</h2>
+  <pre><code>路径：/todos/1
+正文：{"title":"完成第六关","done":true}</code></pre>
+  <p>路径 ID 决定更新哪个 Todo，JSON 正文提供它的新内容。这里使用 <code>PUT</code> 表示完整更新，所以同时发送 <code>title</code> 和 <code>done</code>。</p>
+
+  <h2>2. 发出更新请求</h2>
+  <p>启动服务后，在另一个终端运行：</p>
+  <pre><code>curl -i -X PUT http://localhost:8080/todos/1 \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"完成第六关","done":true}'</code></pre>
+  <p>找到响应状态和更新结果：</p>
+  <pre><code>HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"id":1,"title":"完成第六关","done":true}</code></pre>
+  <p>ID 来自 URL，服务端会覆盖正文中可能出现的 ID，确保更新的仍是路径指定的 Todo。</p>
+
+  <h2>3. 复用两段旧知识</h2>
+  <pre><code>id, err := strconv.Atoi(r.PathValue("id"))
+json.NewDecoder(r.Body).Decode(&amp;updatedTodo)</code></pre>
+  <p>第一行复用第五关，从路径取得数字 ID；第二行复用第四关，从请求正文得到新的 Todo 内容。</p>
+
+  <h2>4. 替换列表中的元素</h2>
+  <pre><code>for index := range todos {
+    if todos[index].ID == id {
+        updatedTodo.ID = id
+        todos[index] = updatedTodo
+        return
+    }
+}</code></pre>
+  <p><code>index</code> 是元素在 slice 中的位置。找到相同 ID 后，用 <code>todos[index] = updatedTodo</code> 替换该位置的旧数据。</p>
+
+  <h2>5. 验证更新与错误</h2>
+  <ol>
+    <li>运行 <code>curl -i http://localhost:8080/todos/1</code>，确认更新结果仍然存在。</li>
+    <li>把标题改成你自己的文字，再发送一次 <code>PUT</code>。</li>
+    <li>发送标题为空的 <code>{"title":"","done":false}</code>，确认返回 <code>400 Bad Request</code>。</li>
+  </ol>
+  <p>第四关的 <code>{}</code> 可以创建空标题 Todo；这一关增加了业务校验，空标题即使是合法 JSON，也会返回 <code>400</code>。暂时只校验标题；严格检查 <code>done</code> 是否出现将在以后需要时再做。</p>
+
+  <h2>6. 一题验收</h2>
+  <div class="card">
+    <p><code>todos[index] = updatedTodo</code> 做了什么？</p>
+    <button onclick="answer(false)">把 updatedTodo 追加到列表末尾</button>
+    <button onclick="answer(true)">用 updatedTodo 替换列表中指定位置的旧元素</button>
+    <button onclick="answer(false)">只修改 HTTP 响应，不修改内存列表</button>
+    <p id="feedback" aria-live="polite"></p>
+  </div>
+
+  <section class="card win">
+    <strong>向老师通关</strong>
+    <p>贴出你亲自修改标题后的 <code>PUT</code> 响应、随后的 <code>GET</code> 响应和一次空标题的 <code>400</code>，再解释路径 ID、请求 JSON 与 <code>todos[index]</code> 如何共同完成更新。</p>
+  </section>
+
+  <p class="tiny">本关明确延后：PATCH 部分更新、严格检查字段是否缺失、并发安全、数据库 UPDATE 和统一错误 JSON。回看进度：<a href="../roadmap.html">Go 后端闯关地图</a>。官方资料：<a href="https://developer.mozilla.org/docs/Web/HTTP/Methods/PUT">HTTP PUT</a>。</p>
+</main>
+<script>
+  function answer(correct) {
+    document.getElementById('feedback').textContent = correct
+      ? '答对了：这次不是 append，而是替换已有位置。'
+      : '对比第四关的 append：这一行等号左边已经指定了列表位置。';
+  }
+</script>
+</body>
+</html>

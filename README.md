@@ -4,7 +4,7 @@
 
 ## 现在开始
 
-第五关：从 URL 路径读取 Todo ID，返回单个 Todo 或 `404 Not Found`。
+第六关：组合路径 ID 和请求 JSON，用 `PUT` 更新内存中的 Todo。
 
 ```bash
 go run .
@@ -13,10 +13,12 @@ go run .
 然后运行：
 
 ```bash
-curl -i http://localhost:8080/todos/1
+curl -i -X PUT http://localhost:8080/todos/1 \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"完成第六关","done":true}'
 ```
 
-课程页面：[`lessons/0005-get-todo-by-id.html`](lessons/0005-get-todo-by-id.html)
+课程页面：[`lessons/0006-update-todo.html`](lessons/0006-update-todo.html)
 
 当前任务与通关条件：[`current.md`](current.md)
 
