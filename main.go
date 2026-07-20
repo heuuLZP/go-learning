@@ -15,6 +15,7 @@ type Todo struct {
 
 var todos = []Todo{
 	{ID: 1, Title: "看懂 JSON 响应", Done: false},
+	{ID: 2, Title: "增加第二项", Done: false},
 }
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
