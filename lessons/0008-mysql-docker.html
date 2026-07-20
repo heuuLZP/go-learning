@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第八关：启动 MySQL</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="lesson-page"><main>
+  <nav class="lesson-nav" aria-label="学习导航"><a href="../roadmap.html">查看闯关地图</a></nav>
+  <div class="eyebrow">Level 8 · 15–20 分钟</div>
+  <h1>启动 MySQL</h1>
+  <p class="mission">前七关的数据只活在 Go 内存中。现在先启动一个独立的 MySQL 服务，进入它的客户端，并确认目标数据库已经存在。</p>
+
+  <section class="card win">
+    <strong>本关胜利画面</strong>
+    <p><code>docker compose ps</code> 显示 MySQL 为 <code>healthy</code>，进入客户端后执行 <code>SELECT DATABASE()</code> 得到 <code>go_learning</code>。</p>
+  </section>
+
+  <h2>1. 认识三个边界</h2>
+  <pre><code>Docker Compose → 启动和配置服务
+MySQL 容器    → 正在运行的数据库服务
+go_learning   → MySQL 服务中的一个数据库</code></pre>
+  <p>容器不是数据库本身的名字；一个 MySQL 服务中可以有多个数据库。这一关只确认这三层能连通。</p>
+
+  <h2>2. 启动 MySQL</h2>
+  <p>先确认 Docker Desktop 已经运行，然后在仓库根目录执行：</p>
+  <pre><code>docker compose up -d</code></pre>
+  <p>第一次会下载 MySQL 8.4 镜像，可能需要几分钟。随后查看状态：</p>
+  <pre><code>docker compose ps</code></pre>
+  <p>初始化期间可能先显示 <code>health: starting</code>；稍等片刻再次执行，直到看到 <code>healthy</code>。</p>
+
+  <h2>3. 进入 MySQL 客户端</h2>
+  <pre><code>docker compose exec mysql \
+  mysql -ugo_learning -pgo_learning go_learning</code></pre>
+  <p>命令前半段进入名为 <code>mysql</code> 的 Compose 服务，后半段启动 MySQL 客户端，并连接到 <code>go_learning</code> 数据库。这些账号只用于本地学习环境。</p>
+
+  <h2>4. 确认当前数据库</h2>
+  <p>看到 <code>mysql&gt;</code> 提示符后，逐条输入：</p>
+  <pre><code>SHOW DATABASES;
+SELECT DATABASE();</code></pre>
+  <p>第一条应该列出 <code>go_learning</code>；第二条应该直接返回当前数据库名。SQL 语句以分号结束。</p>
+  <p>再亲自输入一条只返回文字的查询：</p>
+  <pre><code>SELECT '我进入 MySQL 了' AS message;</code></pre>
+
+  <h2>5. 退出与停止</h2>
+  <pre><code>exit</code></pre>
+  <p>退出客户端不会停止 MySQL 容器。需要暂停服务时运行：</p>
+  <pre><code>docker compose stop</code></pre>
+  <p>再次开始学习时运行 <code>docker compose up -d</code>。暂时不要运行 <code>docker compose down -v</code>，其中 <code>-v</code> 会删除保存数据库数据的 volume。</p>
+
+  <h2>6. 一题验收</h2>
+  <div class="card">
+    <p><code>go_learning</code> 在这套环境中是什么？</p>
+    <button onclick="answer(false)">Docker Compose 的名字</button>
+    <button onclick="answer(false)">MySQL 容器的名字</button>
+    <button onclick="answer(true)">MySQL 服务中的一个数据库</button>
+    <p id="feedback" aria-live="polite"></p>
+  </div>
+
+  <section class="card win">
+    <strong>向老师通关</strong>
+    <p>贴出 <code>docker compose ps</code> 的状态、<code>SELECT DATABASE()</code> 和自定义文字查询的结果，再用自己的话区分 Compose、MySQL 容器与 <code>go_learning</code> 数据库。</p>
+  </section>
+
+  <p class="tiny">本关明确延后：建表、SQL 增删改查、Go 数据库驱动和连接字符串。下一关才会创建 <code>todos</code> 表。回看进度：<a href="../roadmap.html">Go 后端闯关地图</a>。官方资料：<a href="https://docs.docker.com/compose/">Docker Compose</a>、<a href="https://dev.mysql.com/doc/refman/8.4/en/tutorial.html">MySQL Tutorial</a>。</p>
+</main>
+<script>
+  function answer(correct) {
+    document.getElementById('feedback').textContent = correct
+      ? '答对了：容器运行 MySQL 服务，go_learning 是服务内部的数据库。'
+      : '回看三层边界：谁负责启动、谁正在运行、数据放在哪个命名空间。';
+  }
+</script>
+</body>
+</html>

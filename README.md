@@ -4,19 +4,19 @@
 
 ## 现在开始
 
-第七关 Boss：删除 Todo，并复述完整的内存 REST CRUD。
+第八关：用 Docker Compose 启动 MySQL，进入客户端并确认目标数据库。
 
 ```bash
-go run .
+docker compose up -d
 ```
 
 然后运行：
 
 ```bash
-curl -i -X DELETE http://localhost:8080/todos/2
+docker compose ps
 ```
 
-课程页面：[`lessons/0007-delete-todo.html`](lessons/0007-delete-todo.html)
+课程页面：[`lessons/0008-mysql-docker.html`](lessons/0008-mysql-docker.html)
 
 当前任务与通关条件：[`current.md`](current.md)
 
