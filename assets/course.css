@@ -68,6 +68,50 @@ pre code {
   font: inherit;
 }
 
+.code-block {
+  position: relative;
+  margin: 1em 0;
+}
+
+.code-block pre {
+  margin: 0;
+  padding-top: 54px;
+}
+
+.lesson-page .copy-button,
+.reference-page .copy-button {
+  position: absolute;
+  z-index: 1;
+  top: 12px;
+  right: 12px;
+  width: auto;
+  min-width: 54px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--surface);
+  border-radius: 6px;
+  background: var(--ink);
+  box-shadow: none;
+  color: var(--surface);
+  font: 700 13px/1.4 "Nunito", "PingFang SC", sans-serif;
+  text-align: center;
+  cursor: pointer;
+}
+
+.lesson-page .copy-button:hover,
+.reference-page .copy-button:hover {
+  background: var(--surface);
+  box-shadow: none;
+  color: var(--ink);
+  transform: none;
+}
+
+.lesson-page .copy-button:active,
+.reference-page .copy-button:active {
+  box-shadow: none;
+  transform: none;
+}
+
 a {
   color: var(--ink);
   font-weight: 800;
