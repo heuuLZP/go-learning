@@ -1,3 +1,5 @@
+// Shared interactive behavior for lesson and reference pages.
+
 function copyText(text) {
   if (navigator.clipboard && window.isSecureContext) {
     return navigator.clipboard.writeText(text);
