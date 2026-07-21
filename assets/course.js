@@ -1,4 +1,7 @@
-// Shared interactive behavior for lesson and reference pages.
+/**
+ * 课程页和速查页共用的交互逻辑。
+ * 当前负责为代码块添加复制按钮及复制状态反馈。
+ */
 
 function copyText(text) {
   if (navigator.clipboard && window.isSecureContext) {
