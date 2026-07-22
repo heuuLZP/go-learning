@@ -1,0 +1,1 @@
+本项目不要使用 hotpot 相关 skills
