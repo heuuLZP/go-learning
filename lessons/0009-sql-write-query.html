@@ -35,7 +35,7 @@ docker compose ps</code></pre>
   title VARCHAR(255) NOT NULL,
   done BOOLEAN NOT NULL DEFAULT FALSE
 );</code></pre>
-  <p><code>IF NOT EXISTS</code> 表示表已经存在时不要报错。三个字段先这样理解：</p>
+  <p><code>IF NOT EXISTS</code> 表示表已经存在时，不执行创建操作，也不报错。三个字段先这样理解：</p>
   <ul>
     <li><code>id</code> 是自动递增的主键，每行都有自己的编号。</li>
     <li><code>title</code> 保存 Todo 文字，而且不能留空。</li>
