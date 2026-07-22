@@ -4,19 +4,20 @@
 
 ## 现在开始
 
-第八关：用 Docker Compose 启动 MySQL，进入客户端并确认目标数据库。
+第十关：用 <code>UPDATE</code> 和 <code>DELETE</code> 完成一轮 SQL CRUD。
 
 ```bash
 docker compose up -d
 ```
 
-然后运行：
+进入 MySQL 客户端：
 
 ```bash
-docker compose ps
+docker compose exec mysql \
+  mysql -ugo_learning -pgo_learning go_learning
 ```
 
-课程页面：[`lessons/0008-mysql-docker.html`](lessons/0008-mysql-docker.html)
+课程页面：[`lessons/0010-sql-update-delete.html`](lessons/0010-sql-update-delete.html)
 
 当前任务与通关条件：[`current.md`](current.md)
 

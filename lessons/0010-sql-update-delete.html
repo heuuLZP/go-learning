@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第十关：完成 SQL CRUD</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="lesson-page"><main>
+  <nav class="lesson-nav" aria-label="学习导航"><a href="../roadmap.html">查看闯关地图</a></nav>
+  <div class="eyebrow">Level 10 · Boss · 20–25 分钟</div>
+  <h1>完成 SQL CRUD</h1>
+  <p class="mission">上一关已经会写入和查询。本关先用两个字段创建练习数据，再用 <code>UPDATE</code> 和 <code>DELETE</code> 精确操作一行，最后自己完成一轮 SQL CRUD。</p>
+
+  <section class="card win">
+    <strong>本关胜利画面</strong>
+    <p>一条 Todo 从写入、查询、更新到删除都由你亲自完成；删除后的查询返回 <code>Empty set</code>，而其他 Todo 不受影响。</p>
+  </section>
+
+  <h2>1. 把长 SQL 拆成四个部分</h2>
+  <p>SQL 不需要一次背完整句子。先判断动作，再依次补上表、内容和条件：</p>
+  <pre><code>创建：INSERT INTO 表 (字段) VALUES (值)
+读取：SELECT 字段 FROM 表 WHERE 条件
+更新：UPDATE 表 SET 新值 WHERE 条件
+删除：DELETE FROM 表 WHERE 条件</code></pre>
+  <p>SQL CRUD 中的 Create 对应 <code>INSERT</code>，Read 对应 <code>SELECT</code>，Update 和 Delete 与英文名称一致。</p>
+
+  <h2>2. 同时写入两个字段</h2>
+  <p>启动 MySQL，并进入 <code>go_learning</code> 数据库：</p>
+  <pre><code>docker compose up -d
+docker compose exec mysql \
+  mysql -ugo_learning -pgo_learning go_learning</code></pre>
+  <p>看到 <code>mysql&gt;</code> 后执行：</p>
+  <pre><code>INSERT INTO todos (title, done)
+VALUES ('第十关练习', FALSE);</code></pre>
+  <p>字段和值按位置一一对应：<code>title</code> 接收文字，<code>done</code> 接收 <code>FALSE</code>。<code>id</code> 仍由数据库自动生成。</p>
+  <p>查询全部数据，记住这条练习 Todo 的实际 ID：</p>
+  <pre><code>SELECT id, title, done
+FROM todos
+ORDER BY id;</code></pre>
+
+  <h2>3. 先用 WHERE 锁定目标</h2>
+  <p>下面示例假设练习 Todo 的 ID 是 <code>2</code>。如果你看到的 ID 不同，后续所有语句都要换成你的实际 ID。</p>
+  <pre><code>SELECT id, title, done
+FROM todos
+WHERE id = 2;</code></pre>
+  <p><code>WHERE</code> 决定哪些行会被操作。在执行 <code>UPDATE</code> 或 <code>DELETE</code> 前，先用相同条件执行一次 <code>SELECT</code>，确认它只找到目标行。</p>
+
+  <h2>4. 更新这一行</h2>
+  <pre><code>UPDATE todos
+SET title = '已完成第十关更新', done = TRUE
+WHERE id = 2;</code></pre>
+  <p><code>SET</code> 后面写新值，多个字段之间使用逗号分隔；<code>WHERE</code> 指定要修改的行。成功后再次查询：</p>
+  <pre><code>SELECT id, title, done
+FROM todos
+WHERE id = 2;</code></pre>
+  <p>应该看到新标题，并且 <code>done</code> 从 <code>0</code> 变成 <code>1</code>。</p>
+
+  <h2>5. 删除这一行</h2>
+  <p>先重复上一节的 <code>SELECT</code>，确认目标；然后执行：</p>
+  <pre><code>DELETE FROM todos
+WHERE id = 2;</code></pre>
+  <p>用相同条件再次查询：</p>
+  <pre><code>SELECT id, title, done
+FROM todos
+WHERE id = 2;</code></pre>
+  <p>结果应为 <code>Empty set</code>。最后查询全表，确认其他 Todo 仍然存在。</p>
+
+  <section class="card">
+    <strong>安全规则</strong>
+    <p>本关不要执行没有 <code>WHERE</code> 的 <code>UPDATE</code> 或 <code>DELETE</code>：前者会更新所有行，后者会删除所有行。先 <code>SELECT</code> 同一个条件，是数据库操作中很实用的安全习惯。</p>
+  </section>
+
+  <h2>6. SQL CRUD Boss</h2>
+  <p>暂时遮住上面的完整语句，只看下面四个动作，创建另一条自定义 Todo：</p>
+  <ol>
+    <li>同时写入自定义 <code>title</code> 和 <code>done</code>。</li>
+    <li>根据实际 ID 查询它。</li>
+    <li>把标题和完成状态更新一次，再查询验证。</li>
+    <li>删除它，再用查询证明它已经不存在。</li>
+  </ol>
+  <p>卡住时只回看第一节的语句骨架，再自己补表名、字段和值。目标是从动作推回 SQL 结构，不是一次就把所有标点背熟。</p>
+
+  <h2>7. 一题验收</h2>
+  <div class="card">
+    <p>为什么执行 <code>DELETE</code> 前要先用相同的 <code>WHERE</code> 做一次 <code>SELECT</code>？</p>
+    <button onclick="answer(false)">因为 SELECT 会自动备份数据</button>
+    <button onclick="answer(true)">为了确认条件只选中了准备删除的行</button>
+    <button onclick="answer(false)">因为没有 SELECT，DELETE 语法就不合法</button>
+    <p id="feedback" aria-live="polite"></p>
+  </div>
+
+  <section class="card win">
+    <strong>向老师通关</strong>
+    <p>贴出自定义 Todo 的 <code>INSERT</code>、更新后的查询结果、<code>DELETE</code> 以及删除后得到 <code>Empty set</code> 的结果。再解释 <code>SET</code> 和 <code>WHERE</code> 分别控制什么，以及漏掉 <code>WHERE</code> 的风险。</p>
+  </section>
+
+  <p class="tiny">本关明确延后：Go 数据库驱动、连接字符串、事务、索引、外键、软删除和生产环境数据恢复。下一关会由 Go 使用 <code>database/sql</code> 连接 MySQL。回看进度：<a href="../roadmap.html">Go 后端闯关地图</a>。官方资料：<a href="https://dev.mysql.com/doc/refman/8.4/en/update.html">UPDATE Statement</a>、<a href="https://dev.mysql.com/doc/refman/8.4/en/delete.html">DELETE Statement</a>。</p>
+</main>
+<script>
+  function answer(correct) {
+    document.getElementById('feedback').textContent = correct
+      ? '答对了：先预览同一个 WHERE 命中的行，再执行修改或删除。'
+      : 'SELECT 不会备份数据；它在这里用于预览 WHERE 条件会命中哪些行。';
+  }
+</script>
+<script src="../assets/course.js"></script>
+</body>
+</html>
