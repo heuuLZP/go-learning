@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第十一关：Go 连接 MySQL</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="lesson-page"><main>
+  <nav class="lesson-nav" aria-label="学习导航"><a href="../roadmap.html">查看闯关地图</a></nav>
+  <div class="eyebrow">Level 11 · 25–30 分钟</div>
+  <h1>Go 连接 MySQL</h1>
+  <p class="mission">上一关是在 MySQL 客户端里完成 CRUD。这一关让 Go 服务接管“查询列表”和“创建 Todo”：请求进入 handler 后，通过 <code>database/sql</code> 和 MySQL 驱动读写同一张 <code>todos</code> 表。</p>
+
+  <section class="card win">
+    <strong>本关胜利画面</strong>
+    <p>启动 Go 服务后，<code>GET /todos</code> 能读到 MySQL 中已有的 Todo；用 <code>POST /todos</code> 创建一条数据，再直接进入 MySQL 查询也能看到它。这两个动作不再依赖那份内存切片。</p>
+  </section>
+
+  <h2>1. 先画出新的请求链路</h2>
+  <pre><code>HTTP 请求
+  ↓
+todosHandler
+  ↓
+database/sql → MySQL 驱动 → MySQL
+  ↓
+rows.Scan → Todo → JSON 响应</code></pre>
+  <p><code>database/sql</code> 是 Go 提供的数据库操作接口；真正认识 MySQL 协议的是驱动。本关使用 <code>go-sql-driver/mysql</code>，但查询仍然通过标准库完成。</p>
+
+  <h2>2. 启动 MySQL 并确认数据还在</h2>
+  <pre><code>docker compose up -d</code></pre>
+  <p>先确认第十关留下的表和数据：</p>
+  <pre><code>docker compose exec mysql \
+  mysql -ugo_learning -pgo_learning go_learning \
+  -e "SELECT id, title, done FROM todos ORDER BY id;"</code></pre>
+
+  <h2>3. 让 Go 先完成一次 Ping</h2>
+  <p>在 <code>main.go</code> 中加入数据库包和驱动：</p>
+  <pre><code>import (
+  "database/sql"
+  _ "github.com/go-sql-driver/mysql"
+)
+
+const dsn = "go_learning:go_learning@tcp(127.0.0.1:3306)/go_learning?parseTime=true"
+
+func openDB() (*sql.DB, error) {
+  db, err := sql.Open("mysql", dsn)
+  if err != nil {
+    return nil, err
+  }
+  if err := db.Ping(); err != nil {
+    db.Close()
+    return nil, err
+  }
+  return db, nil
+}</code></pre>
+  <p>不要只单独添加 import 就保存：很多编辑器会用 <code>goimports</code> 自动整理 import，而此时 <code>database/sql</code> 还没有被 <code>openDB</code> 使用，会被判定为未使用并移除。请把上面的 import、<code>dsn</code> 和 <code>openDB</code> 一起粘贴，再保存 <code>main.go</code>。</p>
+  <p>保存完整代码后再安装依赖：</p>
+  <pre><code>go get github.com/go-sql-driver/mysql
+go mod tidy</code></pre>
+  <p><code>go get</code> 会把驱动写入 <code>go.mod</code> 和 <code>go.sum</code>。必须先保存驱动导入，再执行 <code>go mod tidy</code>；否则 <code>tidy</code> 会把尚未被源码使用的依赖移除。</p>
+  <p>这里的下划线导入不是多余的：它只执行驱动的注册代码。<code>sql.Open</code> 创建的是连接池句柄，不保证 MySQL 此刻可达；<code>Ping</code> 才是本关要观察的连通性检查。</p>
+  <p>在 <code>main</code> 中启动 HTTP 服务前调用：</p>
+  <pre><code>db, err := openDB()
+if err != nil {
+  log.Fatal("连接 MySQL 失败：", err)
+}
+defer db.Close()</code></pre>
+  <p>运行 <code>go run .</code>。如果密码、端口或容器状态不对，先读错误信息；不要先改 SQL。</p>
+
+  <h2>4. 把 GET /todos 改成查询数据库</h2>
+  <p>把原来的内存列表 handler 改成接收 <code>*sql.DB</code>。先查询，再逐行扫描：</p>
+  <pre><code>func todosHandler(db *sql.DB) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    rows, err := db.QueryContext(r.Context(),
+      "SELECT id, title, done FROM todos ORDER BY id")
+    if err != nil {
+      http.Error(w, "查询 Todo 失败", http.StatusInternalServerError)
+      return
+    }
+    defer rows.Close()
+
+    result := make([]Todo, 0)
+    for rows.Next() {
+      var todo Todo
+      if err := rows.Scan(&amp;todo.ID, &amp;todo.Title, &amp;todo.Done); err != nil {
+        http.Error(w, "读取 Todo 失败", http.StatusInternalServerError)
+        return
+      }
+      result = append(result, todo)
+    }
+    if err := rows.Err(); err != nil {
+      http.Error(w, "读取 Todo 失败", http.StatusInternalServerError)
+      return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(result)
+  }
+}</code></pre>
+  <p>把路由注册改为 <code>http.HandleFunc("GET /todos", todosHandler(db))</code>。<code>QueryContext</code> 使用请求的取消信号，<code>Scan</code> 把 SQL 行的列放回 Go struct；<code>rows.Close</code> 和 <code>rows.Err</code> 是查询完成后的两个检查点。</p>
+  <p>重新启动服务并请求：</p>
+  <pre><code>curl -i http://localhost:8080/todos</code></pre>
+  <p>响应中的数据应该来自 MySQL，而不是 <code>main.go</code> 里原来的示例切片。先在 MySQL 客户端新增或修改一行，再刷新这个接口，观察结果是否同步。</p>
+
+  <h2>5. 让 POST /todos 写入数据库</h2>
+  <p>把原来的整个创建函数替换成下面的版本。注意它和列表 handler 一样接收 <code>db</code>，返回一个真正的 <code>http.HandlerFunc</code>：</p>
+  <pre><code>func createTodoHandler(db *sql.DB) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    var todo Todo
+    if err := json.NewDecoder(r.Body).Decode(&amp;todo); err != nil {
+      http.Error(w, "请求 JSON 无效", http.StatusBadRequest)
+      return
+    }
+    if strings.TrimSpace(todo.Title) == "" {
+      http.Error(w, "title 不能为空", http.StatusBadRequest)
+      return
+    }
+
+    result, err := db.ExecContext(r.Context(),
+      "INSERT INTO todos (title, done) VALUES (?, ?)",
+      todo.Title, todo.Done)
+    if err != nil {
+      http.Error(w, "创建 Todo 失败", http.StatusInternalServerError)
+      return
+    }
+
+    id, err := result.LastInsertId()
+    if err != nil {
+      http.Error(w, "读取新 Todo ID 失败", http.StatusInternalServerError)
+      return
+    }
+    todo.ID = int(id)
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusCreated)
+    if err := json.NewEncoder(w).Encode(todo); err != nil {
+      log.Printf("写入 JSON 响应失败: %v", err)
+    }
+  }
+}</code></pre>
+  <p>问号是参数占位符，不要用字符串拼接把标题直接塞进 SQL。这样既能正确处理引号，也为后续防注入习惯打基础。然后把路由注册改为 <code>http.HandleFunc("POST /todos", createTodoHandler(db))</code>，再验证：</p>
+  <pre><code>curl -i -X POST http://localhost:8080/todos \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"created by go","done":false}'
+
+curl -i http://localhost:8080/todos</code></pre>
+  <p>再用 MySQL 客户端执行 <code>SELECT</code>，确认同一个 ID 和标题已经落在数据库中。</p>
+
+  <section class="card">
+    <strong>本关刻意不做</strong>
+    <p>本关只接入列表查询和创建。<code>UPDATE</code>、<code>DELETE</code>、事务、连接池参数、配置文件和生产环境密钥会留到下一关或真实需求出现时再处理。</p>
+  </section>
+
+  <h2>6. 一题验收</h2>
+  <div class="card">
+    <p>为什么连接代码还要调用 <code>db.Ping()</code>？</p>
+    <button onclick="answer(false)">因为没有 Ping，SQL 语句不能使用问号</button>
+    <button onclick="answer(true)">因为 sql.Open 只创建数据库句柄，Ping 才验证服务确实可达</button>
+    <button onclick="answer(false)">因为 Ping 会自动创建 todos 表</button>
+    <p id="feedback" aria-live="polite"></p>
+  </div>
+
+  <section class="card win">
+    <strong>向老师通关</strong>
+    <p>贴出 Go 启动时的连接结果、<code>GET /todos</code> 读到的数据库数据、<code>POST /todos</code> 的响应，以及 MySQL 中对应的查询结果。再解释驱动、<code>sql.Open</code>、<code>Ping</code>、<code>QueryContext</code> 和 <code>Scan</code> 各自负责什么。</p>
+  </section>
+
+  <p class="tiny">本关明确延后：更新和删除的数据库 handler、事务、索引、连接池调优与生产环境配置。下一关会把剩余两个 REST 动作接到 MySQL，并通过重启 Go 服务证明持久化。回看进度：<a href="../roadmap.html">Go 后端闯关地图</a>。官方资料：<a href="https://pkg.go.dev/database/sql">database/sql</a>、<a href="https://github.com/go-sql-driver/mysql">go-sql-driver/mysql</a>。</p>
+</main>
+<script>
+  function answer(correct) {
+    document.getElementById('feedback').textContent = correct
+      ? '答对了：Open 创建句柄，Ping 验证实际连接。'
+      : 'Ping 不会建表或改变 SQL；它只检查 Go 到 MySQL 的连通性。';
+  }
+</script>
+<script src="../assets/course.js"></script>
+</body>
+</html>

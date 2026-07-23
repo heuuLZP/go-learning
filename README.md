@@ -4,7 +4,7 @@
 
 ## 现在开始
 
-第十关：用 <code>UPDATE</code> 和 <code>DELETE</code> 完成一轮 SQL CRUD。
+第十一关：让 Go 使用 <code>database/sql</code> 连接 MySQL。
 
 ```bash
 docker compose up -d
@@ -17,7 +17,7 @@ docker compose exec mysql \
   mysql -ugo_learning -pgo_learning go_learning
 ```
 
-课程页面：[`lessons/0010-sql-update-delete.html`](lessons/0010-sql-update-delete.html)
+课程页面：[`lessons/0011-go-mysql.html`](lessons/0011-go-mysql.html)
 
 当前任务与通关条件：[`current.md`](current.md)
 
