@@ -19,11 +19,6 @@ type Todo struct {
 	Done  bool   `json:"done"`
 }
 
-var todos = []Todo{
-	{ID: 1, Title: "看懂 JSON 响应", Done: false},
-	{ID: 2, Title: "增加第二项", Done: false},
-}
-
 const dsn = "go_learning:go_learning@tcp(127.0.0.1:3306)/go_learning?parseTime=true"
 
 func openDB() (*sql.DB, error) {
@@ -37,8 +32,6 @@ func openDB() (*sql.DB, error) {
 	}
 	return db, nil
 }
-
-var nextTodoID = 3
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hello, Go First")
@@ -113,77 +106,115 @@ func createTodoHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func todoHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
-		http.Error(w, "Todo ID 无效", http.StatusBadRequest)
-		return
-	}
-
-	for _, todo := range todos {
-		if todo.ID == id {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			if err := json.NewEncoder(w).Encode(todo); err != nil {
-				log.Printf("写入 JSON 响应失败: %v", err)
-			}
+func todoHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "Todo ID 无效", http.StatusBadRequest)
 			return
 		}
-	}
 
-	http.Error(w, "Todo 不存在", http.StatusNotFound)
+		var todo Todo
+		err = db.QueryRowContext(r.Context(),
+			"SELECT id, title, done FROM todos WHERE id = ?", id,
+		).Scan(&todo.ID, &todo.Title, &todo.Done)
+		if err == sql.ErrNoRows {
+			http.Error(w, "Todo 不存在", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "查询 Todo 失败", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(todo); err != nil {
+			log.Printf("写入 JSON 响应失败: %v", err)
+		}
+	}
 }
 
-func updateTodoHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
-		http.Error(w, "Todo ID 无效", http.StatusBadRequest)
-		return
-	}
-
-	var updatedTodo Todo
-	if err := json.NewDecoder(r.Body).Decode(&updatedTodo); err != nil {
-		http.Error(w, "请求 JSON 无效", http.StatusBadRequest)
-		return
-	}
-	if strings.TrimSpace(updatedTodo.Title) == "" {
-		http.Error(w, "title 不能为空", http.StatusBadRequest)
-		return
-	}
-
-	for index := range todos {
-		if todos[index].ID == id {
-			updatedTodo.ID = id
-			todos[index] = updatedTodo
-
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			if err := json.NewEncoder(w).Encode(updatedTodo); err != nil {
-				log.Printf("写入 JSON 响应失败: %v", err)
-			}
+func updateTodoHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "Todo ID 无效", http.StatusBadRequest)
 			return
 		}
-	}
 
-	http.Error(w, "Todo 不存在", http.StatusNotFound)
+		var updatedTodo Todo
+		if err := json.NewDecoder(r.Body).Decode(&updatedTodo); err != nil {
+			http.Error(w, "请求 JSON 无效", http.StatusBadRequest)
+			return
+		}
+		if strings.TrimSpace(updatedTodo.Title) == "" {
+			http.Error(w, "title 不能为空", http.StatusBadRequest)
+			return
+		}
+
+		result, err := db.ExecContext(r.Context(),
+			"UPDATE todos SET title = ?, done = ? WHERE id = ?",
+			updatedTodo.Title, updatedTodo.Done, id)
+		if err != nil {
+			http.Error(w, "更新 Todo 失败", http.StatusInternalServerError)
+			return
+		}
+
+		affected, err := result.RowsAffected()
+		if err != nil {
+			http.Error(w, "读取更新结果失败", http.StatusInternalServerError)
+			return
+		}
+		if affected == 0 {
+			var existingID int
+			err := db.QueryRowContext(r.Context(),
+				"SELECT id FROM todos WHERE id = ?", id,
+			).Scan(&existingID)
+			if err == sql.ErrNoRows {
+				http.Error(w, "Todo 不存在", http.StatusNotFound)
+				return
+			}
+			if err != nil {
+				http.Error(w, "确认 Todo 失败", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		updatedTodo.ID = id
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(updatedTodo); err != nil {
+			log.Printf("写入 JSON 响应失败: %v", err)
+		}
+	}
 }
 
-func deleteTodoHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
-		http.Error(w, "Todo ID 无效", http.StatusBadRequest)
-		return
-	}
-
-	for index := range todos {
-		if todos[index].ID == id {
-			todos = append(todos[:index], todos[index+1:]...)
-			w.WriteHeader(http.StatusNoContent)
+func deleteTodoHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil {
+			http.Error(w, "Todo ID 无效", http.StatusBadRequest)
 			return
 		}
-	}
 
-	http.Error(w, "Todo 不存在", http.StatusNotFound)
+		result, err := db.ExecContext(r.Context(),
+			"DELETE FROM todos WHERE id = ?", id)
+		if err != nil {
+			http.Error(w, "删除 Todo 失败", http.StatusInternalServerError)
+			return
+		}
+
+		affected, err := result.RowsAffected()
+		if err != nil {
+			http.Error(w, "读取删除结果失败", http.StatusInternalServerError)
+			return
+		}
+		if affected == 0 {
+			http.Error(w, "Todo 不存在", http.StatusNotFound)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}
 }
 
 func main() {
@@ -197,9 +228,9 @@ func main() {
 	http.HandleFunc("GET /ping", pingHandler)
 	http.HandleFunc("GET /todos", todosHandler(db))
 	http.HandleFunc("POST /todos", createTodoHandler(db))
-	http.HandleFunc("GET /todos/{id}", todoHandler)
-	http.HandleFunc("PUT /todos/{id}", updateTodoHandler)
-	http.HandleFunc("DELETE /todos/{id}", deleteTodoHandler)
+	http.HandleFunc("GET /todos/{id}", todoHandler(db))
+	http.HandleFunc("PUT /todos/{id}", updateTodoHandler(db))
+	http.HandleFunc("DELETE /todos/{id}", deleteTodoHandler(db))
 
 	log.Println("服务已启动：http://localhost:8080/hello")
 	log.Println("第七关准备：先 POST 创建练习 Todo，再 DELETE /todos/{id}")

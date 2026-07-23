@@ -2,9 +2,9 @@
 
 一个面向 Go 纯新手的个人学习仓库。目标不是先学完整语法，而是通过 10–20 分钟的微关卡，逐步打通 HTTP、REST、SQL、MySQL 和 Go 服务之间的真实后端链路。
 
-## 现在开始
+## 首月进度
 
-第十一关：让 Go 使用 <code>database/sql</code> 连接 MySQL。
+12 / 12 已完成：Go Todo API 已使用 MySQL 持久化数据，重启 Go 服务后仍能查询。
 
 ```bash
 docker compose up -d
@@ -17,7 +17,9 @@ docker compose exec mysql \
   mysql -ugo_learning -pgo_learning go_learning
 ```
 
-课程页面：[`lessons/0011-go-mysql.html`](lessons/0011-go-mysql.html)
+最终课程页面：[`lessons/0012-persistence-boss.html`](lessons/0012-persistence-boss.html)
+
+完成记录：[`learning-records/0012-persistence-boss.md`](learning-records/0012-persistence-boss.md)
 
 当前任务与通关条件：[`current.md`](current.md)
 
@@ -43,6 +45,6 @@ docker compose exec mysql \
 
 更多说明：[`docs/learning-guide.md`](docs/learning-guide.md)。可复用于其他主题的教学方法见 [`docs/learning-method.md`](docs/learning-method.md)，教师用课程设计见 [`docs/course-design.md`](docs/course-design.md)。
 
-## 当前范围
+## 当前成果
 
-第一个月完成内存 REST CRUD，并逐步接入 Docker MySQL。使用 Go 标准库和原生 SQL，不引入 Gin、ORM、Prisma、Redis 或前端页面；事务、索引、鉴权等能力在真实场景出现后再解锁。
+首月已经完成内存 REST CRUD、SQL CRUD 和 Go 接入 Docker MySQL。项目使用 Go 标准库和原生 SQL；Gin、ORM、Prisma、Redis、事务、索引和鉴权等能力将在真实需求出现后再解锁。

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第十二关：持久化 Boss</title>
+  <link rel="stylesheet" href="../assets/course.css">
+</head>
+<body class="lesson-page"><main>
+  <nav class="lesson-nav" aria-label="学习导航"><a href="../roadmap.html">查看闯关地图</a></nav>
+  <div class="eyebrow">Level 12 · Final Boss · 25–30 分钟</div>
+  <h1>持久化 Boss</h1>
+  <p class="mission">上一关已经让列表查询和创建走 MySQL。本关把按 ID 查询、更新和删除也迁到数据库，移除内存数据，最后重启 Go 服务完成一次持久化 CRUD 验收。</p>
+
+  <section class="card win">
+    <strong>本关胜利画面</strong>
+    <p>通过 API 创建并更新一条 Todo，重启 Go 服务后仍能查询到更新结果；删除它后，API 返回 <code>404 Not Found</code>，MySQL 中也查不到这一行。</p>
+  </section>
+
+  <h2>1. 先从动作推回 SQL</h2>
+  <p>暂时不要看后面的代码，先说出三个 handler 各需要哪种 SQL：</p>
+  <pre><code>GET    /todos/{id} → SELECT ... WHERE id = ?
+PUT    /todos/{id} → UPDATE ... WHERE id = ?
+DELETE /todos/{id} → DELETE ... WHERE id = ?</code></pre>
+  <p>这里复用了第五到七关的路径 ID、第十关的 <code>WHERE</code>，以及上一关的参数占位符。问号对应的值仍然作为独立参数传给 <code>database/sql</code>，不要把 ID 或标题拼进 SQL 字符串。</p>
+
+  <h2>2. 让单项查询读取数据库</h2>
+  <p>把原来的 <code>todoHandler</code> 替换为接收 <code>*sql.DB</code> 的版本：</p>
+  <pre><code>func todoHandler(db *sql.DB) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    id, err := strconv.Atoi(r.PathValue("id"))
+    if err != nil {
+      http.Error(w, "Todo ID 无效", http.StatusBadRequest)
+      return
+    }
+
+    var todo Todo
+    err = db.QueryRowContext(r.Context(),
+      "SELECT id, title, done FROM todos WHERE id = ?", id,
+    ).Scan(&amp;todo.ID, &amp;todo.Title, &amp;todo.Done)
+    if err == sql.ErrNoRows {
+      http.Error(w, "Todo 不存在", http.StatusNotFound)
+      return
+    }
+    if err != nil {
+      http.Error(w, "查询 Todo 失败", http.StatusInternalServerError)
+      return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(todo); err != nil {
+      log.Printf("写入 JSON 响应失败: %v", err)
+    }
+  }
+}</code></pre>
+  <p><code>QueryRowContext</code> 适合预期最多一行的查询。它把“没有结果”留到 <code>Scan</code> 时报告为 <code>sql.ErrNoRows</code>；handler 再把这个数据库结果翻译成客户端认识的 <code>404</code>。其他数据库错误只返回通用的 <code>500</code>，不把内部细节暴露给客户端。</p>
+
+  <h2>3. 用 RowsAffected 判断更新目标</h2>
+  <p>保留原来的 ID、JSON 和空标题检查，把查找并替换内存元素的部分改为参数化 <code>UPDATE</code>：</p>
+  <pre><code>func updateTodoHandler(db *sql.DB) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    id, err := strconv.Atoi(r.PathValue("id"))
+    if err != nil {
+      http.Error(w, "Todo ID 无效", http.StatusBadRequest)
+      return
+    }
+
+    var updatedTodo Todo
+    if err := json.NewDecoder(r.Body).Decode(&amp;updatedTodo); err != nil {
+      http.Error(w, "请求 JSON 无效", http.StatusBadRequest)
+      return
+    }
+    if strings.TrimSpace(updatedTodo.Title) == "" {
+      http.Error(w, "title 不能为空", http.StatusBadRequest)
+      return
+    }
+
+    result, err := db.ExecContext(r.Context(),
+      "UPDATE todos SET title = ?, done = ? WHERE id = ?",
+      updatedTodo.Title, updatedTodo.Done, id)
+    if err != nil {
+      http.Error(w, "更新 Todo 失败", http.StatusInternalServerError)
+      return
+    }
+
+    affected, err := result.RowsAffected()
+    if err != nil {
+      http.Error(w, "读取更新结果失败", http.StatusInternalServerError)
+      return
+    }
+    if affected == 0 {
+      var existingID int
+      err := db.QueryRowContext(r.Context(),
+        "SELECT id FROM todos WHERE id = ?", id,
+      ).Scan(&amp;existingID)
+      if err == sql.ErrNoRows {
+        http.Error(w, "Todo 不存在", http.StatusNotFound)
+        return
+      }
+      if err != nil {
+        http.Error(w, "确认 Todo 失败", http.StatusInternalServerError)
+        return
+      }
+    }
+
+    updatedTodo.ID = id
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(updatedTodo); err != nil {
+      log.Printf("写入 JSON 响应失败: %v", err)
+    }
+  }
+}</code></pre>
+  <p><code>ExecContext</code> 只表示 SQL 已经执行，不表示这个 ID 一定存在。MySQL 默认把“写入的值和原值相同”也报告为影响 <code>0</code> 行，所以更新命中 <code>0</code> 行时要再查询一次：查不到才返回 <code>404</code>，查得到则是一次成功但没有产生变化的幂等更新。</p>
+
+  <h2>4. 用同一种判断完成删除</h2>
+  <p>删除与更新使用相同结构：解析 ID、执行带 <code>WHERE</code> 的 SQL、检查受影响行数。把原来的 <code>deleteTodoHandler</code> 替换为：</p>
+  <pre><code>func deleteTodoHandler(db *sql.DB) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    id, err := strconv.Atoi(r.PathValue("id"))
+    if err != nil {
+      http.Error(w, "Todo ID 无效", http.StatusBadRequest)
+      return
+    }
+
+    result, err := db.ExecContext(r.Context(),
+      "DELETE FROM todos WHERE id = ?", id)
+    if err != nil {
+      http.Error(w, "删除 Todo 失败", http.StatusInternalServerError)
+      return
+    }
+
+    affected, err := result.RowsAffected()
+    if err != nil {
+      http.Error(w, "读取删除结果失败", http.StatusInternalServerError)
+      return
+    }
+    if affected == 0 {
+      http.Error(w, "Todo 不存在", http.StatusNotFound)
+      return
+    }
+
+    w.WriteHeader(http.StatusNoContent)
+  }
+}</code></pre>
+  <p>成功时仍返回第七关学过的 <code>204 No Content</code>，不要再写 JSON 正文。执行两次相同的删除请求：第一次应为 <code>204</code>，第二次因为没有行可删，应为 <code>404</code>。</p>
+
+  <h2>5. 接好路由并移除内存旁路</h2>
+  <p>三个 handler 现在都需要数据库句柄，把路由注册改为：</p>
+  <pre><code>http.HandleFunc("GET /todos/{id}", todoHandler(db))
+http.HandleFunc("PUT /todos/{id}", updateTodoHandler(db))
+http.HandleFunc("DELETE /todos/{id}", deleteTodoHandler(db))</code></pre>
+  <p>确认五条 Todo 路由都已经接收 <code>db</code> 后，删除 <code>main.go</code> 中的内存 <code>todos</code> 切片和 <code>nextTodoID</code>。然后格式化并编译：</p>
+  <pre><code>gofmt -w main.go
+go test ./...</code></pre>
+  <p>这里没有测试文件时，<code>go test</code> 仍会编译整个包。编译通过，才能继续最终验收。</p>
+
+  <h2>6. 完成持久化 Boss</h2>
+  <p>启动 MySQL 和 Go 服务，通过 <code>POST</code> 创建一条专用 Todo：</p>
+  <pre><code>docker compose up -d
+go run .</code></pre>
+  <pre><code>curl -i -X POST http://localhost:8080/todos \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"level12 before restart","done":false}'</code></pre>
+  <p>记下响应中的实际 ID。下面以 <code>5</code> 为例；如果你的 ID 不同，后续命令全部换成实际值。</p>
+  <pre><code>curl -i http://localhost:8080/todos/5
+
+curl -i -X PUT http://localhost:8080/todos/5 \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"level12 after restart","done":true}'</code></pre>
+  <p>现在按 <code>Ctrl+C</code> 只停止 Go 服务，不停止 MySQL，再执行 <code>go run .</code>。重新查询：</p>
+  <pre><code>curl -i http://localhost:8080/todos/5</code></pre>
+  <p>如果仍能看到更新后的标题和 <code>"done":true</code>，说明状态不在 Go 进程的内存里。再从 MySQL 交叉验证：</p>
+  <pre><code>docker compose exec mysql \
+  mysql -ugo_learning -pgo_learning go_learning \
+  -e "SELECT id, title, done FROM todos WHERE id = 5;"</code></pre>
+  <p>最后完成删除闭环：</p>
+  <pre><code>curl -i -X DELETE http://localhost:8080/todos/5
+curl -i http://localhost:8080/todos/5</code></pre>
+  <p>两次响应应依次为 <code>204 No Content</code> 和 <code>404 Not Found</code>。再次执行上面的 MySQL 查询，应只剩表头，不再有这一行。</p>
+
+  <section class="card">
+    <strong>本关排错顺序</strong>
+    <p><code>400</code> 先检查路径 ID 或 JSON；<code>404</code> 先用 MySQL 查询实际 ID；<code>500</code> 再看 Go 终端和 MySQL 容器状态。先根据 HTTP 状态缩小范围，不要同时改路由、SQL 和数据库配置。</p>
+  </section>
+
+  <h2>7. 一题验收</h2>
+  <div class="card">
+    <p><code>DELETE</code> 没有报数据库错误时，为什么仍要检查 <code>RowsAffected</code>？</p>
+    <button onclick="answer(false)">因为 RowsAffected 会自动恢复被删除的数据</button>
+    <button onclick="answer(true)">因为 SQL 执行成功也可能没有命中任何 ID，需要据此返回 404</button>
+    <button onclick="answer(false)">因为只有 RowsAffected 才能提交事务</button>
+    <p id="feedback" aria-live="polite"></p>
+  </div>
+
+  <section class="card win">
+    <strong>向老师通关</strong>
+    <p>贴出同一条 Todo 的 <code>POST</code>、<code>PUT</code>、重启 Go 后的 <code>GET</code>、MySQL 查询、<code>DELETE</code> 和删除后 <code>404</code> 的关键结果。再用自己的话解释 <code>QueryRowContext</code>、<code>sql.ErrNoRows</code>、<code>ExecContext</code> 和 <code>RowsAffected</code> 如何把数据库结果变成 HTTP 响应，以及为什么更新影响 <code>0</code> 行时还要确认 ID 是否存在。</p>
+  </section>
+
+  <p class="tiny">本关明确延后：事务、索引、连接池调优、配置与密钥管理、统一错误 JSON、自动化测试、项目分层和 ORM。完成本关即达到首月 12/12 目标：HTTP 请求经过 Go handler 和 MySQL，最终返回 JSON；Go 服务重启后数据仍然存在。回看完整成果：<a href="../roadmap.html">Go 后端闯关地图</a>。官方资料：<a href="https://pkg.go.dev/database/sql#DB.QueryRowContext">QueryRowContext</a>、<a href="https://pkg.go.dev/database/sql#Result">sql.Result</a>。</p>
+</main>
+<script>
+  function answer(correct) {
+    document.getElementById('feedback').textContent = correct
+      ? '答对了：SQL 可以成功执行但命中 0 行，handler 需要把它翻译成 404。'
+      : 'RowsAffected 不负责恢复数据或提交事务；它报告这次写操作实际命中了多少行。';
+  }
+</script>
+<script src="../assets/course.js"></script>
+</body>
+</html>

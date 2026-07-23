@@ -1,31 +1,33 @@
-# 当前关：Go 连接 MySQL
+# 首月目标完成：12 / 12
 
-预计用时：25–30 分钟。今天只做这一关。
+第十二关已经通关。Go Todo API 的五条路由都已接入 MySQL，重启 Go 服务后数据仍然存在，首月后端主线完成。
 
-第十关已经通关，能够独立完成一轮 SQL CRUD。第十一关把 Go 服务接到同一张 `todos` 表，先验证连接，再让列表查询和创建走数据库。
+## 已获得的能力
 
-## 通关条件
+- 能说明 HTTP 请求如何经过 Go handler、`database/sql` 和 MySQL，再形成 JSON 或状态码响应
+- 能分别使用 REST API 和 SQL 完成 Todo CRUD
+- 能区分单行查询、多行查询和不返回结果行的 SQL 操作
+- 能把数据库的无结果、执行失败和受影响行数翻译成 `404`、`500` 或成功响应
+- 能用 API 与 MySQL 查询交叉验证数据，并通过重启 Go 服务证明持久化
 
-- 用 `docker compose up -d` 启动 MySQL
-- 安装 `go-sql-driver/mysql`，并用 `database/sql` 打开连接
-- 用 `db.Ping()` 验证 Go 确实能到达 MySQL
-- 把 `GET /todos` 改为使用 `QueryContext` 和 `Scan` 查询数据库
-- 把 `POST /todos` 改为使用参数化 `INSERT`，返回数据库生成的 ID
-- 能解释驱动、`sql.Open`、`Ping`、`QueryContext` 和 `Scan` 的分工
+## 本次需要记牢的一条链路
 
-## 开始
+```text
+数据库操作
+  -> 检查 error
+  -> 读取 Scan / LastInsertId / RowsAffected
+  -> handler 判断结果
+  -> 写入 HTTP 状态、响应头和 JSON
+```
 
-打开 [第十一关课程](lessons/0011-go-mysql.html)。
+数据库结果不会自动决定 HTTP 状态，handler 负责翻译。尤其是 MySQL 的 `UPDATE` 影响 0 行时，还要区分“ID 不存在”和“值本来就相同”。
 
-想先看整体方向，可以打开 [Go 后端闯关地图](roadmap.html)。
+## 完成记录
 
-如果今天只有 2 分钟：启动 MySQL，在 `main.go` 保存驱动导入后执行 `go mod tidy`，再读一遍 DSN 和 `db.Ping()`，也算保温成功；下一次仍从本关继续。
+查看 [第十二关学习记录](learning-records/0012-persistence-boss.md) 和 [12 / 12 闯关地图](roadmap.html)。
 
-## 向老师通关
+想复习实现，可以重新打开 [第十二关课程](lessons/0012-persistence-boss.html)。
 
-完成后回复两样东西：
+## 下一步
 
-1. Go 启动时的连接结果、`GET /todos`、`POST /todos` 和 MySQL 中对应的查询结果；
-2. 你怎么解释驱动、`sql.Open`、`Ping`、`QueryContext` 和 `Scan`。
-
-老师确认后才解锁下一关。
+先停在这个可运行成果上，不自动加入事务、ORM、鉴权或项目分层。下一阶段应从真实后端需求中选择一个新目标，再决定需要解锁哪项能力。
