@@ -30,9 +30,10 @@
   <pre><code>docker compose up -d
 docker compose exec mysql \
   mysql -ugo_learning -pgo_learning go_learning</code></pre>
+  <p>在 Mac 的终端中，通过这条 Docker 命令进入 MySQL 后，中文输入有时会出现乱码或无法正常录入。为避免输入问题，本关建议使用英文、数字和下划线作为练习数据，例如 <code>my insert</code>；这不影响学习 SQL 语法。</p>
   <p>看到 <code>mysql&gt;</code> 后执行：</p>
   <pre><code>INSERT INTO todos (title, done)
-VALUES ('第十关练习', FALSE);</code></pre>
+VALUES ('level10 practice', FALSE);</code></pre>
   <p>字段和值按位置一一对应：<code>title</code> 接收文字，<code>done</code> 接收 <code>FALSE</code>。<code>id</code> 仍由数据库自动生成。</p>
   <p>查询全部数据，记住这条练习 Todo 的实际 ID：</p>
   <pre><code>SELECT id, title, done
@@ -48,7 +49,7 @@ WHERE id = 2;</code></pre>
 
   <h2>4. 更新这一行</h2>
   <pre><code>UPDATE todos
-SET title = '已完成第十关更新', done = TRUE
+SET title = 'level10 updated', done = TRUE
 WHERE id = 2;</code></pre>
   <p><code>SET</code> 后面写新值，多个字段之间使用逗号分隔；<code>WHERE</code> 指定要修改的行。成功后再次查询：</p>
   <pre><code>SELECT id, title, done
